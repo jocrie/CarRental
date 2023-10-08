@@ -34,6 +34,7 @@ public class CollectionData : IData
         /*Sista bokning är felaktig (vehicleID existerar inte) och ska inte processas/visas i listan sen*/
 
         /*Process Bookings*/
+        // Test
         foreach (var b in _bookings)
         {
             if (b == null) continue;
