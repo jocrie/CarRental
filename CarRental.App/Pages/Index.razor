@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using CarRental.Business.Classes
+@using CarRental.Common.Enums
 @inject BookingProcessor bp
 
 
@@ -28,6 +29,16 @@
 </table>
 
 <h3>Vehicles</h3>
+<div class="btn-group btn-group-sm" role="group" aria-label="Filter vehicle table">
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+    <label for="btnradio1" class="btn btn-outline-primary" @onclick="@(() => vStatus = default)">Show all</label>
+
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+    <label for="btnradio2" class="btn btn-outline-success" @onclick="@(() => vStatus = VehicleStatuses.Available)">Show available</label>
+    
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+    <label for="btnradio3" class="btn btn-outline-danger" @onclick="@(() => vStatus = VehicleStatuses.Booked)">Show booked</label>
+</div>
 <table class="table table-hover mb-4">
     <thead>
         <tr>
@@ -37,12 +48,12 @@
             <th scope="col">Cost per km [SEK]</th>
             <th scope="col">Vehicle Type</th>
             <th scope="col">Cost per day [SEK]</th>
-            <th scope="col">Status</th>
+            <th scope="col" class="text-center" style="width: 100px">Status</th>
         </tr>
     </thead>
 
     <tbody class="table-group-divider">
-        @foreach (var vehicle in bp.GetVehicles())
+        @foreach (var vehicle in bp.GetVehicles(vStatus))
         {
         <tr>
             <td>@vehicle.RegNo</td>
@@ -51,8 +62,7 @@
             <td>@vehicle.CostKm</td>
             <td>@vehicle.VehicleType</td>
             <td>@vehicle.CostDay</td>
-
-            <td> <span class="badge rounded-pill 
+            <td class="text-center"> <span class="badge 
                 text-bg-@(vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available ? "success" : "danger")">
                 @vehicle.VehicleStatus
                 </span>
@@ -73,28 +83,34 @@
             <th scope="col">Date rented</th>
             <th scope="col">Date returned</th>
             <th scope="col">Cost [SEK]</th>
-            <th scope="col">Status</th>
+            <th scope="col" class="text-center" style="width: 100px">Booking status</th>
         </tr>
     </thead>
 
     <tbody class="table-group-divider">
-        @foreach (var booking in bp.GetBookings())
+        @foreach (var b in bp.GetBookings())
         {
+            if (b.BookingValid is false) continue;
             <tr>
-                <td>@booking.Vehicle.RegNo</td>
-                <td>@booking.Person.LastName @booking.Person.FirstName (@booking.Person.Ssn)</td>
-                <td>@booking.OdometerRented</td>
-                <td>"Oreturned"</td>
-                <td>@booking.DateRented</td>
-                <td>@booking.DateReturned</td>
-                <td>"Cost"</td>
-                <td>
-                    <span class="badge rounded-pill
-                text-bg-@(booking.BookingClosed ? "success" : "danger")">
-                        @(booking.BookingClosed ? "Closed" : "Open")
+                <td>@b.RegNo</td>
+                <td>@b.Customer</td>
+                <td>@b.OdometerRented</td>
+                <td>@b.OdometerReturned</td>
+                <td>@b.DateRented.ToString("dd/MM/yyyy")</td>
+                <td>@b.DateReturned?.ToString("dd/MM/yyyy")</td>
+                <td>@(b.Cost > 0 ? Math.Round(b.Cost, 2) : "")</td>
+                <td class="text-center">
+                    <span class="badge
+                text-bg-@(b.BookingClosed ? "primary" : "warning")">
+                        @(b.BookingClosed ? "Closed" : "Open")
                     </span>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+@code
+{
+    VehicleStatuses vStatus = default;
+}
