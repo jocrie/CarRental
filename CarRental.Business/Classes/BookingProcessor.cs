@@ -2,11 +2,6 @@
 using CarRental.Common.Enums;
 using CarRental.Common.Interfaces;
 using CarRental.Data.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarRental.Business.Classes;
 
@@ -18,7 +13,7 @@ public class BookingProcessor
 
     public IEnumerable<Customer> GetCustomers()
     {
-        return _data.GetPersons().OfType<Customer>();
+        return _data.GetPersons().Select(item => (Customer)item).ToList();
     }
 
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
@@ -28,33 +23,6 @@ public class BookingProcessor
 
     public IEnumerable<IBooking> GetBookings()
     {
-        //Logik för att beräkna kostnader med mera
-        //var bookingsImported = _data.GetBookings();
-
-        List<IBooking> bookingsProcessed = new List<IBooking>();
-
-        foreach (var bI in _data.GetBookings()) 
-        {
-            if (bI is null)
-                break;
-            // Process booking if car is available otherwise skip booking
-            if (bI.Vehicle.VehicleStatus.Equals(VehicleStatuses.Available))
-            {
-                bI.RentCar(bI);
-                bookingsProcessed.Add(bI);
-            }
-            
-            return bookingsProcessed.AsEnumerable();
-
-            // Return car if all data provided and valid
-
-            
-
-
-        }
         return _data.GetBookings();
     }
-
-
-
 }

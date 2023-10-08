@@ -24,9 +24,31 @@ public class CollectionData : IData
         _vehicles.Add(new Car(4, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300));
         _vehicles.Add(new Motorcycle(5, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
 
-        _bookings.Add(new Booking(_vehicles[0], _persons[0], new DateOnly(2023, 9, 9)));
-        _bookings.Add(new Booking(_vehicles[1], _persons[1], new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)));
+        _bookings.Add(new Booking(1, 12345, new DateOnly(2023, 9, 9)));
+        _bookings.Add(new Booking(1, 12345, new DateOnly(2023, 9, 9))); /*Ska inte processas eftersom billen inte tillgänglig*/
+        _bookings.Add(new Booking(2, 98765, new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)));
+        _bookings.Add(new Booking(2, 98765, new DateOnly(2023, 9, 12), 100, new DateOnly(2023, 9, 16)));
+        _bookings.Add(new Booking(2, 98765, new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
+        _bookings.Add(new Booking(5, 98765, new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
+        _bookings.Add(new Booking(6, 98765, new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
+        /*Sista bokning är felaktig (vehicleID existerar inte) och ska inte processas/visas i listan sen*/
 
+        /*Process Bookings*/
+        foreach (var b in _bookings)
+        {
+            if (b == null) continue;
+            var vehicle = _vehicles.SingleOrDefault(v => v.VehicleId == b.VehicleId);
+            var customer = _persons.Select(item => (Customer)item).SingleOrDefault(c => c.Ssn == b.PersonId);
+            if (vehicle == null || customer == null)
+            {
+                b.InvalidateBooking();
+                continue;
+            }
+
+            b.RentVehicle(vehicle, customer);
+
+            b.ReturnVehicle(vehicle);
+        }
     }
     
     
