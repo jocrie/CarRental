@@ -4,6 +4,7 @@ namespace CarRental.Common.Interfaces;
 
 public interface IBooking
 {
+    public int Id { get; init; }
     public int VehicleId { get; init; }
     public int PersonId { get; init; }
     public string RegNo { get; }

@@ -4,7 +4,7 @@ namespace CarRental.Common.Interfaces;
 
 public interface IVehicle
 {
-    public int VehicleId { get; init; }
+    public int Id { get; init; }
     public string RegNo { get; init; }
     public string Make { get; init; }
     public int Odometer { get; set; }

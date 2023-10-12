@@ -1,11 +1,14 @@
 ﻿using CarRental.Common.Interfaces;
 using CarRental.Common.Enums;
+using CarRental.Common.Extensions;
 
 namespace CarRental.Common.Classes;
 
 public class Booking : IBooking
 {
+    public int Id { get; init; }
     public int VehicleId { get; init; }
+    // public IVehicle Vehicle { get; init; }
     public int PersonId { get; init; }
     public string RegNo { get; private set; } = string.Empty;
     public string Customer { get; private set; } = string.Empty;
@@ -18,8 +21,9 @@ public class Booking : IBooking
     public bool BookingClosed { get; private set; } = false;
     public bool BookingValid { get; private set; } = true;
 
-    public Booking(int vehicleId, int personId, DateOnly dateRented, int? drivenKm = null, DateOnly? dateReturned = default)
+    public Booking(int id, int vehicleId, int personId, DateOnly dateRented, int? drivenKm = null, DateOnly? dateReturned = default)
     {
+        Id = id;
         VehicleId = vehicleId;
         PersonId = personId;
         DateRented = dateRented;
@@ -48,7 +52,7 @@ public class Booking : IBooking
     public void ReturnVehicle(IVehicle vehicle)
     {
         if (DrivenKm == null || !DateReturned.HasValue) return;
-        int daysDifference = (DateReturned.Value.DayNumber - DateRented.DayNumber) + 1;
+        int daysDifference = DateRented.Duration(DateReturned);
         OdometerReturned = OdometerRented + DrivenKm;
         Cost = vehicle.CostKm * (double)DrivenKm + vehicle.CostDay * daysDifference;
         BookingClosed = true;

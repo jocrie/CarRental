@@ -1,10 +1,25 @@
 ﻿@page "/"
 @using CarRental.Business.Classes
 @using CarRental.Common.Enums
+@using CarRental.Common.Extensions;
 @inject BookingProcessor bp
 
 
 <PageTitle>Car Rental</PageTitle>
+
+@* Error messages *@
+@if (errors.Count > 0)
+{
+    <div class="alert alert-warning" role="alert">
+        Error! Please provide:
+        <ul>
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
 
 <h3>Customers</h3>
 <table class="table table-hover w-50 mb-4">
@@ -17,6 +32,12 @@
     </thead>
 
     <tbody class="table-group-divider">
+        <tr>
+            <td><input @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
+            <td><input @bind="newLastName" placeholder="Last Name" /></td>
+            <td><input @bind="newFirstName" placeholder="First Name" /></td>
+            <td><button class="btn btn-sm btn-outline-success" @onclick="AddCustomer">Add</button></td>
+        </tr>
         @foreach (var person in bp.GetCustomers())
         {
         <tr>
@@ -29,6 +50,7 @@
 </table>
 
 <h3>Vehicles</h3>
+@* Filter *@
 <div class="btn-group btn-group-sm" role="group" aria-label="Filter vehicle table">
     <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
     <label for="btnradio1" class="btn btn-outline-primary" @onclick="@(() => vStatus = default)">Show all</label>
@@ -53,6 +75,22 @@
     </thead>
 
     <tbody class="table-group-divider">
+        <tr>
+            <td><input @bind="newRegNo" maxlength="6" /></td>
+            <td><input @bind="newMake" /></td>
+            <td><input @bind="newOdometer" /></td>
+            <td><input @bind="newCostKm" /></td>
+            <td>
+                <select @bind=newVehicleType>
+                    @foreach (var vT in Enum.GetValues(typeof(VehicleTypes)))
+                    {
+                        <option value="@vT">@vT</option>
+                    }
+                </select>
+            </td>
+            <td><input @bind="newCostDay" /></td>
+            <td><button class="btn btn-sm btn-outline-success" @onclick="AddVehicle">Add</button></td>
+        </tr>
         @foreach (var vehicle in bp.GetVehicles(vStatus))
         {
         <tr>
@@ -113,4 +151,51 @@
 @code
 {
     VehicleStatuses vStatus = default;
+
+    List<string> errors = new();
+
+    /* New customer */
+    string newSsn = string.Empty, newFirstName = string.Empty, newLastName = string.Empty;
+    const int LengthSsn = 5, minLengthName = 2;
+
+    /* New car */
+    string newRegNo = string.Empty, newMake = string.Empty;
+    VehicleTypes newVehicleType;
+    double newCostKm;
+    int newCostDay, newOdometer;
+
+    void AddCustomer()
+    {
+        bool inputError = false;
+        errors = new();
+
+        if (newSsn.Length != LengthSsn || !newSsn.IsNumber())
+        {
+            errors.Add($"SSN with {LengthSsn} digits and no leading zeros");
+            inputError = true;
+        }
+
+        if (newFirstName.Length < minLengthName || !newFirstName.IsLettersOnly() || newLastName.Length < minLengthName || !newLastName.IsLettersOnly())
+        {
+            errors.Add($"First and last name with at least {minLengthName} letters");
+            inputError = true;
+        }
+        if (newSsn.IsNumber() && bp.GetCustomers().Any(c => c.Ssn == (int.Parse(newSsn))))
+        {
+            errors.Add($"SSN that does not exist in database yet");
+            inputError = true;
+        }
+
+        if (inputError) return;
+
+        // Already checked before that newSsn is a number
+        bp.AddCustomer(int.Parse(newSsn), newFirstName, newLastName);
+        newSsn = newFirstName = newLastName = string.Empty;
+        errors = new();
+    }
+
+    void AddVehicle()
+    {
+        bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
+    }
 }
