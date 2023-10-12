@@ -33,9 +33,9 @@
 
     <tbody class="table-group-divider">
         <tr>
-            <td><input @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
-            <td><input @bind="newLastName" placeholder="Last Name" /></td>
-            <td><input @bind="newFirstName" placeholder="First Name" /></td>
+            <td><input class="form-control-sm" @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
+            <td><input class="form-control-sm" @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
+            <td><input class="form-control-sm" @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
             <td><button class="btn btn-sm btn-outline-success" @onclick="AddCustomer">Add</button></td>
         </tr>
         @foreach (var person in bp.GetCustomers())
@@ -44,6 +44,7 @@
             <td>@person.Ssn</td>
             <td>@person.LastName</td>
             <td>@person.FirstName</td>
+            <td></td>
         </tr>
         }
     </tbody>
@@ -76,20 +77,20 @@
 
     <tbody class="table-group-divider">
         <tr>
-            <td><input @bind="newRegNo" maxlength="6" /></td>
-            <td><input @bind="newMake" /></td>
-            <td><input @bind="newOdometer" /></td>
-            <td><input @bind="newCostKm" /></td>
+            <td><input class="form-control-sm" @bind="newRegNo" maxlength="6" /></td>
+            <td><input class="form-control-sm" @bind="newMake" maxlength="30" /></td>
+            <td><input class="form-control-sm" @bind="newOdometer" maxlength="10" /></td>
+            <td><input class="form-control-sm" @bind="newCostKm" maxlength="5" /></td>
             <td>
-                <select @bind=newVehicleType>
+                <select class="form-select form-select-sm" @bind=newVehicleType>
                     @foreach (var vT in Enum.GetValues(typeof(VehicleTypes)))
                     {
                         <option value="@vT">@vT</option>
                     }
                 </select>
             </td>
-            <td><input @bind="newCostDay" /></td>
-            <td><button class="btn btn-sm btn-outline-success" @onclick="AddVehicle">Add</button></td>
+            <td><input class="form-control-sm" @bind="newCostDay" maxlength="5" /></td>
+            <td class="text-center"><button class="btn btn-sm btn-outline-success" @onclick="AddVehicle">Add</button></td>
         </tr>
         @foreach (var vehicle in bp.GetVehicles(vStatus))
         {
@@ -158,49 +159,80 @@
 
     List<string> errors = new();
 
+
     /* New customer */
+    bool inputErrorCustomer = false;
     string newSsn = string.Empty, newFirstName = string.Empty, newLastName = string.Empty;
     const int LengthSsn = 5, minLengthName = 2;
 
-    /* New car */
+    /* New vehicle */
+    bool inputErrorVehicle = false;
     string newRegNo = string.Empty, newMake = string.Empty;
     VehicleTypes newVehicleType;
-    double newCostKm;
-    int newCostDay, newOdometer;
+    double? newCostKm = null;
+    int? newCostDay = null, newOdometer = null;
+    const int LengthRegNo = 6, minLengthMake = 2;
 
     void AddCustomer()
     {
-        bool inputError = false;
+        inputErrorCustomer = false;
         errors = new();
 
         if (newSsn.Length != LengthSsn || !newSsn.IsNumber())
         {
             errors.Add($"SSN with {LengthSsn} digits and no leading zeros");
-            inputError = true;
+            inputErrorCustomer = true;
         }
 
         if (newFirstName.Length < minLengthName || !newFirstName.IsLettersOnly() || newLastName.Length < minLengthName || !newLastName.IsLettersOnly())
         {
             errors.Add($"First and last name with at least {minLengthName} letters");
-            inputError = true;
+            inputErrorCustomer = true;
         }
         if (newSsn.IsNumber() && bp.GetCustomers().Any(c => c.Ssn == (int.Parse(newSsn))))
         {
             errors.Add($"SSN that does not exist in database yet");
-            inputError = true;
+            inputErrorCustomer = true;
         }
 
-        if (inputError) return;
+        if (inputErrorCustomer) return;
 
         // Already checked before that newSsn is a number
         bp.AddCustomer(int.Parse(newSsn), newFirstName, newLastName);
         newSsn = newFirstName = newLastName = string.Empty;
-        errors = new();
     }
 
     void AddVehicle()
     {
-        bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
+        inputErrorVehicle = false;
+        errors = new();
+
+        if (newRegNo.Length != LengthRegNo)
+        {
+            errors.Add($"Registration number with {LengthRegNo} characters");
+            inputErrorVehicle = true;
+        }
+
+        if (bp.GetVehicles().Any(v => v.RegNo == newRegNo))
+        {
+            errors.Add($"Registration number that does not exist in database yet");
+            inputErrorVehicle = true;
+        }
+
+        if (newMake.Length < minLengthMake)
+        {
+            errors.Add($"Make name with at least {minLengthMake} characters");
+            inputErrorVehicle = true;
+        }
+        if (newOdometer is null || newCostKm is null || newCostDay is null)
+        {
+            errors.Add($"Odometer value (int), Cost per km (double) and Cost per day (int) ");
+            inputErrorVehicle = true;
+        }
+        if (inputErrorVehicle) return;
+
+        // Already null checked before
+        bp.AddVehicle(newRegNo, newMake, (int)newOdometer, newVehicleType, (double)newCostKm, (int)newCostDay);
     }
 
     int carIndexToRemove;
