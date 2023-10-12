@@ -13,4 +13,7 @@ public interface IData
     public int NextPersonId { get; }
     public int NextBookingId { get; }
     public void Add<T>(T item);
+
+    //For Test
+    public void RemoveAvehicle(int index);
 }

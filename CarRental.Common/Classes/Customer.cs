@@ -8,6 +8,8 @@ public class Customer : IPerson
     public int Ssn { get; init; }
     public string LastName { get; init; }
     public string FirstName { get; init; }
+    
+    public string CustomerOutput => $"{LastName} {FirstName} ({Ssn})";
 
     public Customer(int id, int ssn, string lastName, string firstName) => (Id, Ssn, LastName, FirstName) = (id, ssn, lastName, firstName);
 }

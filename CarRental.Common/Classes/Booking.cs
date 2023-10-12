@@ -7,11 +7,12 @@ namespace CarRental.Common.Classes;
 public class Booking : IBooking
 {
     public int Id { get; init; }
-    public int VehicleId { get; init; }
-    // public IVehicle Vehicle { get; init; }
-    public int PersonId { get; init; }
-    public string RegNo { get; private set; } = string.Empty;
-    public string Customer { get; private set; } = string.Empty;
+    //public int VehicleId { get; init; }
+    public IVehicle Vehicle { get; init; }
+    public Customer Customer { get; init; }
+    //public int PersonId { get; init; }
+    //public string RegNo { get; private set; } = string.Empty;
+    // public string Customer { get; private set; } = string.Empty;
     public int? OdometerRented { get; private set; } = null;
     public int? OdometerReturned { get; private set; } = null;
     public DateOnly DateRented { get; init; }
@@ -19,45 +20,45 @@ public class Booking : IBooking
     public int? DrivenKm { get; init; } = null;
     public double Cost { get; private set; }
     public bool BookingClosed { get; private set; } = false;
-    public bool BookingValid { get; private set; } = true;
+    public bool BookingValid { get; private set; } = false;
 
-    public Booking(int id, int vehicleId, int personId, DateOnly dateRented, int? drivenKm = null, DateOnly? dateReturned = default)
+    public Booking(int id, IVehicle vehicle, Customer customer, DateOnly dateRented, int? drivenKm = null, DateOnly? dateReturned = default)
     {
         Id = id;
-        VehicleId = vehicleId;
-        PersonId = personId;
+        Vehicle = vehicle;
+        Customer = customer;
         DateRented = dateRented;
         DrivenKm = drivenKm;
         DateReturned = dateReturned;
     }
 
-    public void InvalidateBooking()
+    public void ValidateBooking()
     {
-        BookingValid = false;
+        BookingValid = true;
     }
 
-    public void RentVehicle(IVehicle vehicle, Customer customer)
+    public void RentVehicle()
     {
-        if (vehicle.VehicleStatus == VehicleStatuses.Booked)
+        if (Vehicle.VehicleStatus == VehicleStatuses.Booked)
         {
             BookingValid = false;
             return;
         } 
-        OdometerRented = vehicle.Odometer;
-        RegNo = vehicle.RegNo;
-        Customer = $"{customer.LastName} {customer.FirstName} ({customer.Ssn})";
-        vehicle.VehicleStatus = VehicleStatuses.Booked;
+        OdometerRented = Vehicle.Odometer;
+        // RegNo = vehicle.RegNo;
+        // Customer = $"{customer.LastName} {customer.FirstName} ({customer.Ssn})";
+        Vehicle.VehicleStatus = VehicleStatuses.Booked;
     }
 
-    public void ReturnVehicle(IVehicle vehicle)
+    public void ReturnVehicle()
     {
         if (DrivenKm == null || !DateReturned.HasValue) return;
         int daysDifference = DateRented.Duration(DateReturned);
         OdometerReturned = OdometerRented + DrivenKm;
-        Cost = vehicle.CostKm * (double)DrivenKm + vehicle.CostDay * daysDifference;
+        Cost = Vehicle.CostKm * (double)DrivenKm + Vehicle.CostDay * daysDifference;
         BookingClosed = true;
-        vehicle.VehicleStatus = VehicleStatuses.Available;
+        Vehicle.VehicleStatus = VehicleStatuses.Available;
         if (!OdometerReturned.HasValue) return;
-        vehicle.Odometer = (int)OdometerReturned;
+        Vehicle.Odometer = (int)OdometerReturned;
     }
 }

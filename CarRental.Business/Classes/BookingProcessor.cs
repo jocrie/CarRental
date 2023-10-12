@@ -49,4 +49,9 @@ public class BookingProcessor
         _data.Add(newVehicle);
     }
 
+    public void RemoveCar(int carIndexToRemove)
+    {
+        _data.RemoveAvehicle(carIndexToRemove);
+    }
+
 }

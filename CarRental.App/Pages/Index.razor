@@ -109,6 +109,10 @@
         }
     </tbody>
 </table>
+<div>
+    <input type="number" @bind="carIndexToRemove" />
+    <button @onclick="RemoveCar">Remove</button>
+</div>
 
 <h3>Bookings</h3>
 <table class="table table-hover mb-4">
@@ -130,8 +134,8 @@
         {
             if (b.BookingValid is false) continue;
             <tr>
-                <td>@b.RegNo</td>
-                <td>@b.Customer</td>
+                <td>@b.Vehicle.RegNo</td>
+                <td>@b.Customer.CustomerOutput</td>
                 <td>@b.OdometerRented</td>
                 <td>@b.OdometerReturned</td>
                 <td>@b.DateRented.ToString("dd/MM/yyyy")</td>
@@ -197,5 +201,11 @@
     void AddVehicle()
     {
         bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
+    }
+
+    int carIndexToRemove;
+    void RemoveCar()
+    {
+        bp.RemoveCar(carIndexToRemove);
     }
 }
