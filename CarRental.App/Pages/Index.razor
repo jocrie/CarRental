@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using CarRental.Business.Classes
+@using CarRental.Common.Classes;
 @using CarRental.Common.Enums
 @using CarRental.Common.Extensions;
 @inject BookingProcessor bp
@@ -38,7 +39,7 @@
             <td><input class="form-control-sm" @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
             <td><button class="btn btn-sm btn-outline-success" @onclick="AddCustomer">Add</button></td>
         </tr>
-        @foreach (var person in bp.GetCustomers())
+        @foreach (var person in bp.GetCustomers().OrderBy(cust => cust.LastName))
         {
         <tr>
             <td>@person.Ssn</td>
@@ -51,7 +52,20 @@
 </table>
 
 <h3>Vehicles</h3>
+@* Rent car *@
+<h5>Select customer to rent car</h5>
+<div class="w-25 mb-4">
+
+    <select class="form-select form-select-sm" @bind=rentCustomerId>
+        @foreach (var c in bp.GetCustomers().OrderBy(cust => cust.LastName))
+        {
+            <option value="@c.Id">@c.CustomerOutput</option>
+        }
+    </select>
+</div>
+
 @* Filter *@
+<h5>Filter vehicle list</h5>
 <div class="btn-group btn-group-sm" role="group" aria-label="Filter vehicle table">
     <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
     <label for="btnradio1" class="btn btn-outline-primary" @onclick="@(() => vStatus = default)">Show all</label>
@@ -62,6 +76,7 @@
     <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
     <label for="btnradio3" class="btn btn-outline-danger" @onclick="@(() => vStatus = VehicleStatuses.Booked)">Show booked</label>
 </div>
+@* Vehicle table *@
 <table class="table table-hover mb-4">
     <thead>
         <tr>
@@ -72,10 +87,12 @@
             <th scope="col">Vehicle Type</th>
             <th scope="col">Cost per day [SEK]</th>
             <th scope="col" class="text-center" style="width: 100px">Status</th>
+            <th scope="col">Action</th>
         </tr>
     </thead>
 
     <tbody class="table-group-divider">
+        @* Add car *@
         <tr>
             <td><input class="form-control-sm" @bind="newRegNo" maxlength="6" /></td>
             <td><input class="form-control-sm" @bind="newMake" maxlength="30" /></td>
@@ -90,8 +107,10 @@
                 </select>
             </td>
             <td><input class="form-control-sm" @bind="newCostDay" maxlength="5" /></td>
+            <td></td>
             <td class="text-center"><button class="btn btn-sm btn-outline-success" @onclick="AddVehicle">Add</button></td>
         </tr>
+        @* Show existing cars *@
         @foreach (var vehicle in bp.GetVehicles(vStatus))
         {
         <tr>
@@ -106,14 +125,30 @@
                 @vehicle.VehicleStatus
                 </span>
             </td>
+            @* Actions *@
+            @if (vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available)
+            {
+                <td class="text-center"><button class="btn btn-sm btn-outline-success" @onclick="RentVehicle">Rent</button></td>
+            }
+            else
+            {
+                <td class="text-center">
+                    <input class="form-control-sm" @bind="rentDrivenKm" maxlength="10" placeholder="Driven distance" />
+                    <button class="btn btn-sm btn-outline-success" @onclick="ReturnVehicle">Return</button>
+                </td>
+            }
         </tr>
+
         }
     </tbody>
 </table>
+
+@* Remove vehicle *@
 <div>
     <input type="number" @bind="carIndexToRemove" />
     <button @onclick="RemoveCar">Remove</button>
 </div>
+
 
 <h3>Bookings</h3>
 <table class="table table-hover mb-4">
@@ -172,6 +207,10 @@
     double? newCostKm = null;
     int? newCostDay = null, newOdometer = null;
     const int LengthRegNo = 6, minLengthMake = 2;
+
+    /* Rent and return */
+    int? rentCustomerId = null;
+    int? rentDrivenKm = null;
 
     void AddCustomer()
     {
@@ -233,6 +272,16 @@
 
         // Already null checked before
         bp.AddVehicle(newRegNo, newMake, (int)newOdometer, newVehicleType, (double)newCostKm, (int)newCostDay);
+    }
+
+    void RentVehicle()
+    {
+        
+    }
+
+    void ReturnVehicle()
+    {
+
     }
 
     int carIndexToRemove;
