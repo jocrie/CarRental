@@ -32,12 +32,14 @@ public class Booking : IBooking
         DateReturned = dateReturned;
     }
 
+
+
     public void ValidateBooking()
     {
         BookingValid = true;
     }
 
-    public void RentVehicle()
+    public void ProcessRentingRequest()
     {
         if (Vehicle.VehicleStatus == VehicleStatuses.Booked)
         {
@@ -50,7 +52,7 @@ public class Booking : IBooking
         Vehicle.VehicleStatus = VehicleStatuses.Booked;
     }
 
-    public void ReturnVehicle()
+    public void ProcessReturningRequest()
     {
         if (DrivenKm == null || !DateReturned.HasValue) return;
         int daysDifference = DateRented.Duration(DateReturned);

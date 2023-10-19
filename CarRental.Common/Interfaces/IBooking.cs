@@ -20,6 +20,6 @@ public interface IBooking
     public bool BookingClosed { get; }
     public bool BookingValid { get; }
     public void ValidateBooking();
-    public void RentVehicle();
-    public void ReturnVehicle();
+    public void ProcessRentingRequest();
+    public void ProcessReturningRequest();
 }

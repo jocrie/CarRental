@@ -20,36 +20,21 @@ public class CollectionData : IData
 
     void SeedData()
     {
+        _persons.Add(new Customer(NextPersonId, 12345, "Doe", "John"));
+        _persons.Add(new Customer(NextPersonId, 98765, "Doe", "Jane"));
+        
+        _vehicles.Add(new Car(NextVehicleId, "ABC123", "Volvo", 10000, VehicleTypes.Combi, 1, 200));
+        _vehicles.Add(new Car(NextVehicleId, "DEF456", "Saab", 20000, VehicleTypes.Sedan, 1, 100));
+        _vehicles.Add(new Car(NextVehicleId, "GHI789", "Tesla", 1000, VehicleTypes.Sedan, 3, 100));
+        _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300));
+        _vehicles.Add(new Car(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
 
-        Customer[] customers =
-        {
-            new Customer(NextPersonId, 12345, "Doe", "John"),
-            new Customer(NextPersonId, 98765, "Doe", "Jane")
-        };
-        _persons.AddRange(customers);
-
-
-        IVehicle[] vehicles =
-        {
-            new Car(NextVehicleId, "ABC123", "Volvo", 10000, VehicleTypes.Combi, 1, 200),
-            new Car(NextVehicleId, "DEF456", "Saab", 20000, VehicleTypes.Sedan, 1, 100),
-            new Car(NextVehicleId, "GHI789", "Tesla", 1000, VehicleTypes.Sedan, 3, 100),
-            new Car(NextVehicleId, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300),
-            new Motorcycle(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50)
-        };
-        _vehicles.AddRange(vehicles);
-
-        Booking[] bookings =
-        {
-        new Booking(NextBookingId, vehicles[0], customers[0], new DateOnly(2023, 9, 9)),
-        new Booking(NextBookingId, vehicles[0], customers[0], new DateOnly(2023, 9, 9)), /*Ska inte processas eftersom billen inte tillgänglig*/
-        new Booking(NextBookingId, vehicles[1], customers[1], new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)),
-        new Booking(NextBookingId, vehicles[1], customers[1], new DateOnly(2023, 9, 12), 100, new DateOnly(2023, 9, 16)),
-        new Booking(NextBookingId, vehicles[1], customers[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)),
-        new Booking(NextBookingId, vehicles[1], customers[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25))
-        //, new Booking(NextBookingId, vehicles[5], customers[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)) /*bokning är felaktig (vehicleID existerar inte) och ska inte processas/visas i listan sen*/
-        };
-        _bookings.AddRange(bookings);
+        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9)));
+        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9))); /*Ska inte processas eftersom billen inte tillgänglig*/
+        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)));
+        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 12), 100, new DateOnly(2023, 9, 16)));
+        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
+        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
 
 
         /*Process Bookings*/
@@ -65,9 +50,9 @@ public class CollectionData : IData
                 continue;
             }*/
 
-            b.RentVehicle();
+            b.ProcessRentingRequest();
 
-            b.ReturnVehicle();
+            b.ProcessReturningRequest();
         }
     }
 
@@ -84,6 +69,10 @@ public class CollectionData : IData
         if (item is Motorcycle motorcycle)
         {
             _vehicles.Add(motorcycle);
+        }
+        if (item is Booking booking)
+        {
+            _bookings.Add(booking);
         }
     }
 

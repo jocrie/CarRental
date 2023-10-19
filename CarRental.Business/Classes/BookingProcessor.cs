@@ -18,9 +18,19 @@ public class BookingProcessor
         return _data.GetPersons().Cast<Customer>();
     }
 
+    public Customer? GetCustomer(int customerId)
+    {
+        return GetCustomers().SingleOrDefault(c => c.Id == customerId);
+    }
+
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
     {
         return _data.GetVehicles(status);
+    }
+
+    public IVehicle? GetVehicle(int vehicleId) 
+    { 
+        return _data.GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
     }
 
     public IEnumerable<IBooking> GetBookings()
@@ -49,7 +59,17 @@ public class BookingProcessor
         _data.Add(newVehicle);
     }
 
-    
+    public void RentVehicle(int vehicleId, int customerId)
+    {
+        var vehicle = GetVehicle(vehicleId);
+        var customer = GetCustomer(customerId);
+        DateOnly dateRented = DateOnly.FromDateTime(DateTime.Now);
+        if (vehicle is null || customer is null) return;
+        var newBooking = new Booking(_data.NextBookingId, vehicle, customer, dateRented, vehicle.Odometer);
+        newBooking.ValidateBooking();
+        newBooking.ProcessRentingRequest();    
+        _data.Add(newBooking);
+    }
 
     public void RemoveCar(int carIndexToRemove)
     {
