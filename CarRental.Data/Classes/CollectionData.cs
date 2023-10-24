@@ -1,5 +1,6 @@
 ﻿using CarRental.Common.Classes;
 using CarRental.Common.Enums;
+using CarRental.Common.Extensions;
 using CarRental.Common.Interfaces;
 using CarRental.Data.Interfaces;
 
@@ -18,6 +19,10 @@ public class CollectionData : IData
 
     public CollectionData() => SeedData();
 
+    public string[] VehicleStatusNames => Enum.GetNames(typeof(VehicleStatuses));
+    public string[] VehicleTypeNames => Enum.GetNames(typeof(VehicleTypes));
+    public VehicleTypes GetVehicleType(string name) => (VehicleTypes)Enum.Parse(typeof(VehicleTypes), name);
+
     void SeedData()
     {
         _persons.Add(new Customer(NextPersonId, 12345, "Doe", "John"));
@@ -29,31 +34,23 @@ public class CollectionData : IData
         _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300));
         _vehicles.Add(new Car(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
 
-        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9)));
-        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9))); /*Ska inte processas eftersom billen inte tillgänglig*/
+        /*_bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9)));
+        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9))); *//*Ska inte processas eftersom billen inte tillgänglig*//*
         _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)));
         _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 12), 100, new DateOnly(2023, 9, 16)));
         _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
         _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
 
 
-        /*Process Bookings*/
+        *//*Process seed Bookings*//*
         foreach (var b in _bookings)
         {
             if (b == null || b.Vehicle is null || b.Customer is null) continue;
-            
-            b.ValidateBooking();
-            /*var vehicle = _vehicles.SingleOrDefault(v => v.Id == b.Vehicle.);
-            var customer = _persons.Select(item => (Customer)item).SingleOrDefault(c => c.Ssn == b.Customer.Id);*/
-            /*if (vehicle == null || customer == null)
-            {
-                continue;
-            }*/
 
-            b.ProcessRentingRequest();
+            var booking = RentVehicle(b.Vehicle.Id, b.Customer.Id);
 
-            b.ProcessReturningRequest();
-        }
+            ReturnVehicle(b.Vehicle.Id);
+        }*/
     }
 
     public void Add<T>(T item)
@@ -91,4 +88,28 @@ public class CollectionData : IData
             return _vehicles.Where(v => v.VehicleStatus.Equals(status));
     }
     public IEnumerable<IBooking> GetBookings() => _bookings;
+
+    public IBooking? RentVehicle(int vehicleId, int customerId)
+    {
+        var vehicle = GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
+        var customer = GetPersons().SingleOrDefault(p => p.Id == customerId);
+        if (vehicle == null || customer == null) return null;
+        vehicle.VehicleStatus = VehicleStatuses.Booked;
+        DateOnly dateRented = DateOnly.FromDateTime(DateTime.Now);
+        var newBooking = new Booking(NextBookingId, vehicle, (Customer)customer, dateRented, vehicle.Odometer);
+        
+        return newBooking;
+    }
+
+    public void ReturnVehicle(int vehicleId, int drivenKm, DateOnly? returnDate)
+    {
+        var vehicle = GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
+        var booking = GetBookings().SingleOrDefault(b => (b.Vehicle == vehicle) && (b.BookingClosed == false));
+        if(vehicle is null || booking is null || returnDate is null) return;
+
+        booking.ProcessReturn(drivenKm, (DateOnly)returnDate);
+        vehicle.VehicleStatus = VehicleStatuses.Available;
+    }
+
+    
 }

@@ -9,13 +9,21 @@
 
 <PageTitle>Car Rental</PageTitle>
 
-@* Error messages *@
-@if (errors.Count > 0)
+@* Unforseen error*@
+@if (unforseenError != string.Empty)
+{
+    <div class="alert alert-danger" role="alert">@unforseenError</div>
+}
+
+
+<h3>Customers</h3>
+@* Error messages customers*@
+@if (addCustomerErrors.Count > 0)
 {
     <div class="alert alert-warning" role="alert">
         Error! Please provide:
         <ul>
-            @foreach (var error in errors)
+            @foreach (var error in addCustomerErrors)
             {
                 <li>@error</li>
             }
@@ -23,7 +31,6 @@
     </div>
 }
 
-<h3>Customers</h3>
 <table class="table table-hover w-50 mb-4">
     <thead>
         <tr>
@@ -37,12 +44,12 @@
     <tbody class="table-group-divider">
         <tr>
             <td></td>
-            <td><input class="form-control-sm" @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
-            <td><input class="form-control-sm" @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
-            <td><input class="form-control-sm" @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
+            <td><input  @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
+            <td><input  @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
+            <td><input  @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
             <td><button class="btn btn-sm btn-outline-success" @onclick="AddCustomer">Add</button></td>
         </tr>
-        @foreach (var person in bp.GetCustomers().OrderBy(cust => cust.LastName))
+        @foreach (var person in bp.GetCustomers().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList())
         {
         <tr>
             <td>@person.Id</td>
@@ -55,8 +62,13 @@
     </tbody>
 </table>
 
-<h3>Vehicles</h3>
-@* Rent car *@
+<h3>Rent and return</h3>
+@* Error messages rent and return*@
+@if (rentReturnError != string.Empty)
+{
+    <div class="alert alert-warning" role="alert">@rentReturnError</div>
+}
+
 <h5>Select customer to rent next car</h5>
 <div class="w-25 mb-4">
     <select class="form-select form-select-sm" @bind=rentCustomerId>
@@ -67,17 +79,32 @@
     </select>
 </div>
 
-<h5>Choose return date</h5>
+<h5>Choose return date (Rent date is set to todays date)</h5>
 <div class="w-25 mb-4">
-    <form>
+    @* <form> *@
         @* <label>Enter a rent date:</label>
         <input type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
         <br><br> *@
         <label>Enter a return date:</label>
-        <input type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
-
-    </form>
+    <input class="@(returnDate is null ? "bg-danger-subtle" : "")" @bind="returnDate" type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
+    @* </form> *@
 </div>
+
+
+<h3>Vehicles</h3>
+@* Error messages addVehicle*@
+@if (addVehicleErrors.Count > 0)
+{
+    <div class="alert alert-warning" role="alert">
+        Error! Please provide:
+        <ul>
+            @foreach (var error in addVehicleErrors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
 
 @* Filter *@
 <h5>Filter vehicle list</h5>
@@ -92,7 +119,7 @@
     <label for="btnradio3" class="btn btn-outline-danger" @onclick="@(() => vStatus = VehicleStatuses.Booked)">Show booked</label>
 </div>
 @* Vehicle table *@
-<table class="table table-hover mb-4">
+<table id="vehicleTable" class="table table-hover mb-4">
     <thead>
         <tr>
             <th scope="col">ID</th>
@@ -106,26 +133,34 @@
             <th scope="col">Action</th>
         </tr>
     </thead>
-
     <tbody class="table-group-divider">
         @* Add car *@
         <tr>
             <td></td>
-            <td><input class="form-control-sm" @bind="newRegNo" maxlength="6" /></td>
-            <td><input class="form-control-sm" @bind="newMake" maxlength="30" /></td>
-            <td><input class="form-control-sm" @bind="newOdometer" maxlength="10" /></td>
-            <td><input class="form-control-sm" @bind="newCostKm" maxlength="5" /></td>
+            <td><input @bind="newRegNo" minlength="1" maxlength="6" disabled="@bp.Processing"/></td>
+            <td><input @bind="newMake" maxlength="30" disabled="@bp.Processing" /></td>
+            <td><input @bind="newOdometer" maxlength="10" disabled="@bp.Processing" /></td>
+            <td><input @bind="newCostKm" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
-                <select class="form-select form-select-sm" @bind=newVehicleType>
-                    @foreach (var vT in Enum.GetValues(typeof(VehicleTypes)))
+                <select class="form-select form-select-sm" @bind=newVehicleType disabled="@bp.Processing">
+                    @foreach (var vT in bp.VehicleTypeNames)
                     {
                         <option value="@vT">@vT</option>
                     }
                 </select>
             </td>
-            <td><input class="form-control-sm" @bind="newCostDay" maxlength="5" /></td>
-            <td></td>
-            <td class="text-center"><button class="btn btn-sm btn-outline-success" @onclick="AddVehicle">Add</button></td>
+            <td><input @bind="newCostDay" maxlength="5" disabled="@bp.Processing" /></td>
+            <td class="text-center">
+                @if (bp.Processing)
+                {
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-success form-control-sm" @onclick="AddVehicle" disabled="@bp.Processing">Add</button>
+                </td>
         </tr>
         @* Show existing cars *@
         @foreach (var vehicle in bp.GetVehicles(vStatus))
@@ -146,15 +181,17 @@
             @* Actions *@
             @if (vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available)
             {
-                    <td class="text-center"><button class="btn btn-sm btn-outline-success" @onclick="(() => RentVehicle(vehicle))">Rent</button></td>
+                    <td>
+                            <button class="btn btn-sm btn-outline-success form-control-sm" @onclick="async () => await bp.RentVehicle(vehicle.Id, rentCustomerId)" disabled="@bp.Processing">Rent</button>
+                    </td>
             }
             else
             {
-                <td class="text-center">
-                    <form>
-                        <input class="form-control-sm" @bind="rentDrivenKm" type="number" min="1" max="10000" placeholder="Driven distance" />
-                        <button type="submit" class="btn btn-sm btn-outline-success" @onclick="ReturnVehicle">Return</button>
-                    </form>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input class="input-group-text" @bind="rentDrivenKm" type="text" min="1" max="10000" placeholder="Driven distance" disabled="@bp.Processing" />
+                        <button class="btn btn-sm btn-outline-success form-control" @onclick="(() => ReturnVehicle(vehicle.Id))" disabled="@bp.Processing">Return</button>
+                    </div>
                 </td>
             }
         </tr>
@@ -212,7 +249,10 @@
 {
     VehicleStatuses vStatus = default;
 
-    List<string> errors = new();
+    List<string> addCustomerErrors = new();
+    List<string> addVehicleErrors = new();
+    string rentReturnError = string.Empty;
+    string unforseenError = string.Empty;
 
 
     /* New customer */
@@ -231,77 +271,106 @@
     /* Rent and return */
     int rentCustomerId = 1; //Select Customer with id 1 when page is loaded
     int? rentDrivenKm = null;
+    const int minDrivenKm = 1, maxDrivenKm = 10000;
+    DateTime? returnDate = DateTime.Now; //Set to todays date when page is loaded
+    bool processing = false;
+
 
     void AddCustomer()
     {
         inputErrorCustomer = false;
-        errors = new();
+        addCustomerErrors = new();
 
         if (newSsn.Length != LengthSsn || !newSsn.IsNumber())
         {
-            errors.Add($"SSN with {LengthSsn} digits and no leading zeros");
+            addCustomerErrors.Add($"Unique SSN with {LengthSsn} digits and no leading zeros");
             inputErrorCustomer = true;
         }
 
         if (newFirstName.Length < minLengthName || !newFirstName.IsLettersOnly() || newLastName.Length < minLengthName || !newLastName.IsLettersOnly())
         {
-            errors.Add($"First and last name with at least {minLengthName} letters");
+            addCustomerErrors.Add($"First and last name with at least {minLengthName} letters");
             inputErrorCustomer = true;
         }
         if (newSsn.IsNumber() && bp.GetCustomers().Any(c => c.Ssn == (int.Parse(newSsn))))
         {
-            errors.Add($"SSN that does not exist in database yet");
+            addCustomerErrors.Add($"SSN that does not exist in database yet");
             inputErrorCustomer = true;
         }
 
         if (inputErrorCustomer) return;
 
-        // Already checked before that newSsn is a number
-        bp.AddCustomer(int.Parse(newSsn), newFirstName, newLastName);
-        newSsn = newFirstName = newLastName = string.Empty;
+        try
+        {
+            bp.AddCustomer(int.Parse(newSsn), newFirstName, newLastName);
+            newSsn = newFirstName = newLastName = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            unforseenError = $"Unforseen error: {ex.Message}";
+        }
     }
 
     void AddVehicle()
     {
         inputErrorVehicle = false;
-        errors = new();
+        addVehicleErrors = new();
 
         if (newRegNo.Length != LengthRegNo)
         {
-            errors.Add($"Registration number with {LengthRegNo} characters");
+            addVehicleErrors.Add($"Unique registration number with {LengthRegNo} characters");
             inputErrorVehicle = true;
         }
 
         if (bp.GetVehicles().Any(v => v.RegNo == newRegNo))
         {
-            errors.Add($"Registration number that does not exist in database yet");
+            addVehicleErrors.Add($"Registration number that does not exist in database yet");
             inputErrorVehicle = true;
         }
 
-        if (newMake.Length < minLengthMake)
+        if (newMake.Length < minLengthMake || !newMake.IsLettersOnly() )
         {
-            errors.Add($"Make name with at least {minLengthMake} characters");
+            addVehicleErrors.Add($"Make name with at least {minLengthMake} characters");
             inputErrorVehicle = true;
         }
-        if (newOdometer is null || newCostKm is null || newCostDay is null)
+        if (newOdometer is null || newCostKm is null || newCostDay is null || newOdometer < 0 || newCostKm < 0 || newCostDay < 0)
         {
-            errors.Add($"Odometer value (int), Cost per km (double) and Cost per day (int) ");
+            addVehicleErrors.Add($"Positive Odometer value (int), positive Cost per km (double) and positive Cost per day (int) ");
             inputErrorVehicle = true;
         }
         if (inputErrorVehicle) return;
 
-        // Already null checked before
-        bp.AddVehicle(newRegNo, newMake, (int)newOdometer, newVehicleType, (double)newCostKm, (int)newCostDay);
+        try
+        {
+            bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
+            newRegNo = newMake = string.Empty;
+            newOdometer = newCostDay = null;
+            newCostKm = null;
+        }
+        catch (Exception ex)
+        {
+            unforseenError = $"Unforseen error: {ex.Message}";
+        }
     }
 
-    void RentVehicle(IVehicle vehicle)
+    void ReturnVehicle(int vehicleId)
     {
-        bp.RentVehicle(vehicle.Id, rentCustomerId);
-    }
+        try
+        {
+            if (rentDrivenKm < 1 || rentDrivenKm is null) throw new ArgumentException("Distance reuired to be whole number and bigger than 0");
+            if (returnDate is null) throw new ArgumentException("Return date required");
+            bp.ReturnVehicle(vehicleId, rentDrivenKm, returnDate);
 
-    void ReturnVehicle()
-    {
-
+            rentDrivenKm = null;
+        }
+        catch (ArgumentException ex)
+        {
+            rentReturnError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            rentReturnError = ex.Message;
+        }
     }
 
     int carIndexToRemove;
