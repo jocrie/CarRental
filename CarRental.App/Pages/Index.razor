@@ -31,23 +31,24 @@
     </div>
 }
 
-<table class="table table-hover w-50 mb-4">
+<table class="table w-50 mb-4 align-middle">
     <thead>
         <tr>
             <th scope="col">ID</th>
             <th scope="col">SSN</th>
             <th scope="col">Last Name</th>
             <th scope="col">First Name</th>
+            <th scope="col">Action</th>
         </tr>
     </thead>
 
-    <tbody class="table-group-divider">
-        <tr>
+    <tbody>
+        <tr class="table-primary">
             <td></td>
-            <td><input  @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
-            <td><input  @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
-            <td><input  @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
-            <td><button class="btn btn-sm btn-outline-success" @onclick="AddCustomer">Add</button></td>
+            <td><input class="col-xs-4 form-control" @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
+            <td><button class="btn btn-sm btn-primary" @onclick="AddCustomer">Add Customer</button></td>
         </tr>
         @foreach (var person in bp.GetCustomers().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList())
         {
@@ -71,7 +72,7 @@
 
 <h5>Select customer to rent next car</h5>
 <div class="w-25 mb-4">
-    <select class="form-select form-select-sm" @bind=rentCustomerId>
+    <select class="form-select" @bind=rentCustomerId>
         @foreach (var c in bp.GetCustomers().OrderBy(cust => cust.LastName).ToList())
         {
             <option value="@c.Id">@c.CustomerOutput</option>
@@ -85,8 +86,7 @@
         @* <label>Enter a rent date:</label>
         <input type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
         <br><br> *@
-        <label>Enter a return date:</label>
-    <input class="@(returnDate is null ? "bg-danger-subtle" : "")" @bind="returnDate" type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
+    <input class="@(returnDate is null ? "bg-danger-subtle" : "") form-control" @bind="returnDate" type="date" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")">
     @* </form> *@
 </div>
 
@@ -110,7 +110,7 @@
 <h5>Filter vehicle list</h5>
 <div class="btn-group btn-group-sm" role="group" aria-label="Filter vehicle table">
     <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-    <label for="btnradio1" class="btn btn-outline-primary" @onclick="@(() => vStatus = default)">Show all</label>
+    <label for="btnradio1" class="btn btn-outline-secondary" @onclick="@(() => vStatus = default)">Show all</label>
 
     <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
     <label for="btnradio2" class="btn btn-outline-success" @onclick="@(() => vStatus = VehicleStatuses.Available)">Show available</label>
@@ -119,7 +119,7 @@
     <label for="btnradio3" class="btn btn-outline-danger" @onclick="@(() => vStatus = VehicleStatuses.Booked)">Show booked</label>
 </div>
 @* Vehicle table *@
-<table id="vehicleTable" class="table table-hover mb-4">
+<table id="vehicleTable" class="table mb-4 align-middle">
     <thead>
         <tr>
             <th scope="col">ID</th>
@@ -129,27 +129,30 @@
             <th scope="col">Cost per km [SEK]</th>
             <th scope="col">Vehicle Type</th>
             <th scope="col">Cost per day [SEK]</th>
-            <th scope="col" class="text-center" style="width: 100px">Status</th>
             <th scope="col">Action</th>
+            <th scope="col" class="text-center" style="width: 100px">Vehicle status</th>
         </tr>
     </thead>
     <tbody class="table-group-divider">
         @* Add car *@
-        <tr>
+        <tr class="table-primary">
             <td></td>
-            <td><input @bind="newRegNo" minlength="1" maxlength="6" disabled="@bp.Processing"/></td>
-            <td><input @bind="newMake" maxlength="30" disabled="@bp.Processing" /></td>
-            <td><input @bind="newOdometer" maxlength="10" disabled="@bp.Processing" /></td>
-            <td><input @bind="newCostKm" maxlength="5" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newRegNo" minlength="1" maxlength="6" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newMake" maxlength="30" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newOdometer" maxlength="10" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newCostKm" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
-                <select class="form-select form-select-sm" @bind=newVehicleType disabled="@bp.Processing">
+                <select class="form-select me-4" @bind=newVehicleType disabled="@bp.Processing">
                     @foreach (var vT in bp.VehicleTypeNames)
                     {
                         <option value="@vT">@vT</option>
                     }
                 </select>
             </td>
-            <td><input @bind="newCostDay" maxlength="5" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="newCostDay" maxlength="5" disabled="@bp.Processing" /></td>
+            <td>
+                <button class="btn btn-sm btn-primary" @onclick="AddVehicle" disabled="@bp.Processing">Add Vehicle</button>
+                </td>
             <td class="text-center">
                 @if (bp.Processing)
                 {
@@ -158,9 +161,6 @@
                     </div>
                 }
             </td>
-            <td>
-                <button class="btn btn-sm btn-outline-success form-control-sm" @onclick="AddVehicle" disabled="@bp.Processing">Add</button>
-                </td>
         </tr>
         @* Show existing cars *@
         @foreach (var vehicle in bp.GetVehicles(vStatus))
@@ -173,11 +173,6 @@
             <td>@vehicle.CostKm</td>
             <td>@vehicle.VehicleType</td>
             <td>@vehicle.CostDay</td>
-            <td class="text-center"> <span class="badge 
-                text-bg-@(vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available ? "success" : "danger")">
-                @vehicle.VehicleStatus
-                </span>
-            </td>
             @* Actions *@
             @if (vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available)
             {
@@ -194,6 +189,11 @@
                     </div>
                 </td>
             }
+            <td class="text-center"> <span class="badge 
+                text-bg-@(vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available ? "success" : "danger")">
+                @vehicle.VehicleStatus
+                </span>
+            </td>
         </tr>
 
         }
@@ -342,6 +342,7 @@
 
         try
         {
+            unforseenError = string.Empty;
             bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
             newRegNo = newMake = string.Empty;
             newOdometer = newCostDay = null;
@@ -357,11 +358,13 @@
     {
         try
         {
+            rentReturnError = string.Empty;
             if (rentDrivenKm < 1 || rentDrivenKm is null) throw new ArgumentException("Distance reuired to be whole number and bigger than 0");
             if (returnDate is null) throw new ArgumentException("Return date required");
             bp.ReturnVehicle(vehicleId, rentDrivenKm, returnDate);
 
             rentDrivenKm = null;
+            
         }
         catch (ArgumentException ex)
         {

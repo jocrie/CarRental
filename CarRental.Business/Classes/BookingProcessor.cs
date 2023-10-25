@@ -18,7 +18,8 @@ public class BookingProcessor
 
     public IEnumerable<Customer> GetCustomers()
     {
-        return _data.GetPersons().Cast<Customer>();
+        // return _data.GetPersons().Cast<Customer>();
+        return _data.Get<IPerson>(null).Cast<Customer>();
     }
 
     public Customer? GetCustomer(int customerId)

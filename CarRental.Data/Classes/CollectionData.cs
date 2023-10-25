@@ -1,13 +1,16 @@
 ﻿using CarRental.Common.Classes;
 using CarRental.Common.Enums;
-using CarRental.Common.Extensions;
 using CarRental.Common.Interfaces;
 using CarRental.Data.Interfaces;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace CarRental.Data.Classes;
 
 public class CollectionData : IData
 {
+    readonly Dictionary<Type, IEnumerable<object>> _data = new();
+
     readonly List<IPerson> _persons = new List<IPerson>();
     readonly List<IVehicle> _vehicles = new List<IVehicle>();
     readonly List<IBooking> _bookings = new List<IBooking>();
@@ -27,12 +30,17 @@ public class CollectionData : IData
     {
         _persons.Add(new Customer(NextPersonId, 12345, "Doe", "John"));
         _persons.Add(new Customer(NextPersonId, 98765, "Doe", "Jane"));
-        
+
         _vehicles.Add(new Car(NextVehicleId, "ABC123", "Volvo", 10000, VehicleTypes.Combi, 1, 200));
         _vehicles.Add(new Car(NextVehicleId, "DEF456", "Saab", 20000, VehicleTypes.Sedan, 1, 100));
         _vehicles.Add(new Car(NextVehicleId, "GHI789", "Tesla", 1000, VehicleTypes.Sedan, 3, 100));
         _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300));
-        _vehicles.Add(new Car(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
+        _vehicles.Add(new Motorcycle(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
+
+
+        // Use dictionary instead
+        /*_data[typeof(IVehicle)] = new List<IVehicle>(_vehicles);
+        _data[typeof(IPerson)] = new List<IPerson>(_persons);*/
 
         /*_bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9)));
         _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9))); *//*Ska inte processas eftersom billen inte tillgänglig*//*
@@ -76,7 +84,27 @@ public class CollectionData : IData
     //TEST ONLY
     public void RemoveAvehicle(int index)
     {
-       _vehicles.RemoveAt(index);
+        _vehicles.RemoveAt(index);
+    }
+
+    public List<T> Get<T>(Expression<Func<T, bool>>? expression) where T : class
+    {
+        var collectionProperty = GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+            .FirstOrDefault(f => f.FieldType == typeof(List<T>) && f.IsInitOnly)
+            ?? throw new InvalidOperationException("Unsupported type");
+
+        var value = collectionProperty.GetValue(this) ?? throw new InvalidDataException("No data found");
+
+        var collection = ((List<T>)value).AsQueryable();
+
+        if (expression is null) return collection.ToList();
+
+        return collection.Where(expression).ToList();
+    }
+
+    public T? Single<T>(Expression<Func<T, bool>>? expression) where T : class
+    {
+        return null;
     }
 
     public IEnumerable<IPerson> GetPersons() => _persons;

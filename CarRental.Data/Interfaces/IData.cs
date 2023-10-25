@@ -1,11 +1,15 @@
 ﻿using CarRental.Common.Classes;
 using CarRental.Common.Enums;
 using CarRental.Common.Interfaces;
+using System.Linq.Expressions;
 
 namespace CarRental.Data.Interfaces;
 
 public interface IData
 {
+    List<T> Get<T>(Expression<Func<T, bool>>? expression) where T : class;
+    T? Single<T>(Expression<Func<T, bool>>? expression) where T : class;
+
     public IEnumerable<IPerson> GetPersons();
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default);
     public IEnumerable<IBooking> GetBookings();
@@ -20,6 +24,7 @@ public interface IData
     public string[] VehicleStatusNames => Enum.GetNames(typeof(VehicleStatuses));
     public string[] VehicleTypeNames => Enum.GetNames(typeof(VehicleTypes));
     public VehicleTypes GetVehicleType(string name) => (VehicleTypes)Enum.Parse(typeof(VehicleTypes), name);
+
     //For Test
     public void RemoveAvehicle(int index);
 }
