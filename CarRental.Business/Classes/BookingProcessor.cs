@@ -29,17 +29,22 @@ public class BookingProcessor
 
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
     {
-        return _data.GetVehicles(status);
+        //return _data.GetVehicles(status);
+        if (status != default) return _data.Get<IVehicle>(v => v.VehicleStatus == status);
+        else return _data.Get<IVehicle>(null);
     }
 
     public IVehicle? GetVehicle(int vehicleId) 
-    { 
-        return _data.GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
+    {
+        //return _data.GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
+        return _data.Single<IVehicle>(v => v.Id == vehicleId);
     }
 
     public IEnumerable<IBooking> GetBookings()
     {
-        return _data.GetBookings();
+        //return _data.GetBookings();
+        return _data.Get<IBooking>(null);
+
     }
 
     public void AddCustomer(int ssn, string firstName, string lastName)
@@ -71,7 +76,7 @@ public class BookingProcessor
         var newBooking = _data.RentVehicle(vehicleId, customerId);
         _data.Add(newBooking);
         Processing = false;
-        return _data.GetBookings().ToList();
+        return _data.Get<IBooking>(null).ToList();
     }
 
     public void ReturnVehicle(int vehicleId, int? drivenKm, DateTime? returnDate)

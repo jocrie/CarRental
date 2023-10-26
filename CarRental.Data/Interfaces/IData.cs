@@ -7,12 +7,12 @@ namespace CarRental.Data.Interfaces;
 
 public interface IData
 {
-    List<T> Get<T>(Expression<Func<T, bool>>? expression) where T : class;
-    T? Single<T>(Expression<Func<T, bool>>? expression) where T : class;
+    List<T> Get<T>(Func<T, bool>? expression) where T : class;
+    T? Single<T>(Func<T, bool> expression) where T : class;
 
-    public IEnumerable<IPerson> GetPersons();
+    /*public IEnumerable<IPerson> GetPersons();
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default);
-    public IEnumerable<IBooking> GetBookings();
+    public IEnumerable<IBooking> GetBookings();*/
     public int NextVehicleId { get; }
     public int NextPersonId { get; }
     public int NextBookingId { get; }

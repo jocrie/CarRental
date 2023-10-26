@@ -11,7 +11,8 @@ public static class UiInputExtensions
 {
     public static bool IsLettersOnly(this string inputString)
     {
-        Regex regex = new Regex("^[a-zA-Z]+$");
+        // Letter, space or minus to allow for double names
+        Regex regex = new Regex("^[a-zA-Z -]+$");
         return regex.IsMatch(inputString);
     }
 

@@ -87,7 +87,7 @@ public class CollectionData : IData
         _vehicles.RemoveAt(index);
     }
 
-    public List<T> Get<T>(Expression<Func<T, bool>>? expression) where T : class
+    public List<T> Get<T>(Func<T, bool>? expression) where T : class
     {
         var collectionProperty = GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
             .FirstOrDefault(f => f.FieldType == typeof(List<T>) && f.IsInitOnly)
@@ -102,12 +102,22 @@ public class CollectionData : IData
         return collection.Where(expression).ToList();
     }
 
-    public T? Single<T>(Expression<Func<T, bool>>? expression) where T : class
+    public T? Single<T>(Func<T, bool> expression) where T : class
     {
-        return null;
+        var collectionProperty = GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+            .FirstOrDefault(f => f.FieldType == typeof(List<T>) && f.IsInitOnly)
+            ?? throw new InvalidOperationException("Unsupported type");
+
+        var value = collectionProperty.GetValue(this) ?? throw new InvalidDataException("No data found");
+
+        var collection = ((List<T>)value).AsQueryable();
+
+        var item = collection.SingleOrDefault(expression);
+
+        return item ?? throw new InvalidOperationException("More than one or no matching item found.");
     }
 
-    public IEnumerable<IPerson> GetPersons() => _persons;
+    /*public IEnumerable<IPerson> GetPersons() => _persons;
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
     {
         if (status is 0)
@@ -115,12 +125,12 @@ public class CollectionData : IData
         else
             return _vehicles.Where(v => v.VehicleStatus.Equals(status));
     }
-    public IEnumerable<IBooking> GetBookings() => _bookings;
+    public IEnumerable<IBooking> GetBookings() => _bookings;*/
 
     public IBooking? RentVehicle(int vehicleId, int customerId)
     {
-        var vehicle = GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
-        var customer = GetPersons().SingleOrDefault(p => p.Id == customerId);
+        var vehicle = Single<IVehicle>(v => v.Id == vehicleId);
+        var customer = Single<IPerson>(p => p.Id == customerId);
         if (vehicle == null || customer == null) return null;
         vehicle.VehicleStatus = VehicleStatuses.Booked;
         DateOnly dateRented = DateOnly.FromDateTime(DateTime.Now);
@@ -131,8 +141,8 @@ public class CollectionData : IData
 
     public void ReturnVehicle(int vehicleId, int drivenKm, DateOnly? returnDate)
     {
-        var vehicle = GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
-        var booking = GetBookings().SingleOrDefault(b => (b.Vehicle == vehicle) && (b.BookingClosed == false));
+        var vehicle = Single<IVehicle>(v => v.Id == vehicleId);
+        var booking = Single<IBooking>(b => (b.Vehicle == vehicle) && (b.BookingClosed == false));
         if(vehicle is null || booking is null || returnDate is null) return;
 
         booking.ProcessReturn(drivenKm, (DateOnly)returnDate);
