@@ -27,10 +27,6 @@ public class Booking : IBooking
         OdometerRented = odometerRented;
     }
 
-    /*public Booking()
-    {
-    }*/
-
     public void ProcessReturn(int drivenKm, DateOnly returnDate)
     {
         DrivenKm = drivenKm;

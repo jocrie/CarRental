@@ -18,7 +18,6 @@ public class BookingProcessor
 
     public IEnumerable<Customer> GetCustomers()
     {
-        // return _data.GetPersons().Cast<Customer>();
         return _data.Get<IPerson>(null).Cast<Customer>();
     }
 
@@ -29,20 +28,17 @@ public class BookingProcessor
 
     public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
     {
-        //return _data.GetVehicles(status);
         if (status != default) return _data.Get<IVehicle>(v => v.VehicleStatus == status);
         else return _data.Get<IVehicle>(null);
     }
 
     public IVehicle? GetVehicle(int vehicleId) 
     {
-        //return _data.GetVehicles().SingleOrDefault(v => v.Id == vehicleId);
         return _data.Single<IVehicle>(v => v.Id == vehicleId);
     }
 
     public IEnumerable<IBooking> GetBookings()
     {
-        //return _data.GetBookings();
         return _data.Get<IBooking>(null);
 
     }
@@ -90,9 +86,9 @@ public class BookingProcessor
     public VehicleTypes GetVehicleType(string name) => _data.GetVehicleType(name);
 
     //FOR TESTING
-    public void RemoveCar(int carIndexToRemove)
+    /*public void RemoveCar(int carIndexToRemove)
     {
         _data.RemoveAvehicle(carIndexToRemove);
-    }
+    }*/
 
 }

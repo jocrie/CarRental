@@ -2,7 +2,6 @@
 using CarRental.Common.Enums;
 using CarRental.Common.Interfaces;
 using CarRental.Data.Interfaces;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace CarRental.Data.Classes;
@@ -36,55 +35,6 @@ public class CollectionData : IData
         _vehicles.Add(new Car(NextVehicleId, "GHI789", "Tesla", 1000, VehicleTypes.Sedan, 3, 100));
         _vehicles.Add(new Car(NextVehicleId, "JKL012", "Jeep", 5000, VehicleTypes.Van, 1.5, 300));
         _vehicles.Add(new Motorcycle(NextVehicleId, "MNO345", "Yamaha", 30000, VehicleTypes.Motorcycle, 0.5, 50));
-
-
-        // Use dictionary instead
-        /*_data[typeof(IVehicle)] = new List<IVehicle>(_vehicles);
-        _data[typeof(IPerson)] = new List<IPerson>(_persons);*/
-
-        /*_bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9)));
-        _bookings.Add(new Booking(NextBookingId, _vehicles[0], (Customer)_persons[0], new DateOnly(2023, 9, 9))); *//*Ska inte processas eftersom billen inte tillgänglig*//*
-        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 10), 100, new DateOnly(2023, 9, 11)));
-        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 12), 100, new DateOnly(2023, 9, 16)));
-        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
-        _bookings.Add(new Booking(NextBookingId, _vehicles[1], (Customer)_persons[1], new DateOnly(2023, 9, 20), 100, new DateOnly(2023, 9, 25)));
-
-
-        *//*Process seed Bookings*//*
-        foreach (var b in _bookings)
-        {
-            if (b == null || b.Vehicle is null || b.Customer is null) continue;
-
-            var booking = RentVehicle(b.Vehicle.Id, b.Customer.Id);
-
-            ReturnVehicle(b.Vehicle.Id);
-        }*/
-    }
-
-    public void Add<T>(T item)
-    {
-        if (item is Customer customer)
-        {
-            _persons.Add((IPerson)customer);
-        }
-        if (item is Car car)
-        {
-            _vehicles.Add(car);
-        }
-        if (item is Motorcycle motorcycle)
-        {
-            _vehicles.Add(motorcycle);
-        }
-        if (item is Booking booking)
-        {
-            _bookings.Add(booking);
-        }
-    }
-
-    //TEST ONLY
-    public void RemoveAvehicle(int index)
-    {
-        _vehicles.RemoveAt(index);
     }
 
     public List<T> Get<T>(Func<T, bool>? expression) where T : class
@@ -94,9 +44,7 @@ public class CollectionData : IData
             ?? throw new InvalidOperationException("Unsupported type");
 
         var value = collectionProperty.GetValue(this) ?? throw new InvalidDataException("No data found");
-
         var collection = ((List<T>)value).AsQueryable();
-
         if (expression is null) return collection.ToList();
 
         return collection.Where(expression).ToList();
@@ -109,23 +57,27 @@ public class CollectionData : IData
             ?? throw new InvalidOperationException("Unsupported type");
 
         var value = collectionProperty.GetValue(this) ?? throw new InvalidDataException("No data found");
-
         var collection = ((List<T>)value).AsQueryable();
-
         var item = collection.SingleOrDefault(expression);
 
         return item ?? throw new InvalidOperationException("More than one or no matching item found.");
     }
 
-    /*public IEnumerable<IPerson> GetPersons() => _persons;
-    public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
+    public void Add<T>(T item)
     {
-        if (status is 0)
-            return _vehicles;
-        else
-            return _vehicles.Where(v => v.VehicleStatus.Equals(status));
+        if (item is Customer customer)
+            _persons.Add((IPerson)customer);
+        
+        if (item is Car car)
+            _vehicles.Add(car);
+        
+        if (item is Motorcycle motorcycle)
+            _vehicles.Add(motorcycle);
+        
+        if (item is Booking booking)
+            _bookings.Add(booking);
+        
     }
-    public IEnumerable<IBooking> GetBookings() => _bookings;*/
 
     public IBooking? RentVehicle(int vehicleId, int customerId)
     {
@@ -149,5 +101,10 @@ public class CollectionData : IData
         vehicle.VehicleStatus = VehicleStatuses.Available;
     }
 
-    
+    //TEST ONLY
+/*    public void RemoveAvehicle(int index)
+    {
+        _vehicles.RemoveAt(index);
+    }*/
+
 }

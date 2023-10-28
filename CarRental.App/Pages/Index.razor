@@ -17,7 +17,7 @@
 
 
 <h3>Customers</h3>
-@* Error messages customers*@
+@* Error messages for adding customer *@
 @if (addCustomerErrors.Count > 0)
 {
     <div class="alert alert-warning" role="alert">
@@ -31,10 +31,11 @@
     </div>
 }
 
+@* Customer table *@
 <table class="table w-50 mb-4 align-middle">
     <thead>
         <tr>
-            <th scope="col">ID</th>
+            @* <th scope="col">ID</th> *@
             <th scope="col">SSN</th>
             <th scope="col">Last Name</th>
             <th scope="col">First Name</th>
@@ -44,7 +45,7 @@
 
     <tbody>
         <tr class="table-primary">
-            <td></td>
+            @* <td></td> *@
             <td><input class="col-xs-4 form-control" @bind="newSsn" placeholder="@LengthSsn digit SSN" maxlength="5" /></td>
             <td><input class="col-xs-4 form-control" @bind="newLastName" placeholder="Last Name" maxlength="30" /></td>
             <td><input class="col-xs-4 form-control" @bind="newFirstName" placeholder="First Name" maxlength="30" /></td>
@@ -53,7 +54,7 @@
         @foreach (var person in bp.GetCustomers().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList())
         {
         <tr>
-            <td>@person.Id</td>
+            @* <td>@person.Id</td> *@
             <td>@person.Ssn</td>
             <td>@person.LastName</td>
             <td>@person.FirstName</td>
@@ -64,7 +65,7 @@
 </table>
 
 <h3>Rent and return</h3>
-@* Error messages rent and return*@
+@* Error messages for rent and return*@
 @if (rentReturnError != string.Empty)
 {
     <div class="alert alert-warning" role="alert">@rentReturnError</div>
@@ -90,9 +91,8 @@
     @* </form> *@
 </div>
 
-
 <h3>Vehicles</h3>
-@* Error messages addVehicle*@
+@* Error messages for adding vehicles *@
 @if (addVehicleErrors.Count > 0)
 {
     <div class="alert alert-warning" role="alert">
@@ -106,7 +106,7 @@
     </div>
 }
 
-@* Filter *@
+@* Filter vehicles*@
 <h5>Filter vehicle list</h5>
 <div class="btn-group btn-group-sm" role="group" aria-label="Filter vehicle table">
     <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
@@ -117,12 +117,15 @@
     
     <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
     <label for="btnradio3" class="btn btn-outline-danger" @onclick="@(() => vStatus = VehicleStatuses.Booked)">Show booked</label>
+
 </div>
+    <span class="align-middle ms-4"><strong>Displaying @bp.GetVehicles(vStatus).Count() of @bp.GetVehicles().Count() vehicles</strong></span>
+
 @* Vehicle table *@
 <table id="vehicleTable" class="table mb-4 align-middle">
     <thead>
         <tr>
-            <th scope="col">ID</th>
+            @* <th scope="col">ID</th> *@
             <th scope="col">RegNo</th>
             <th scope="col">Make</th>
             <th scope="col">Odometer [km]</th>
@@ -134,39 +137,40 @@
         </tr>
     </thead>
     <tbody class="table-group-divider">
-        @* Add car *@
+        @* Add vehicle *@
         <tr class="table-primary">
-            <td></td>
+            @* <td></td> *@
             <td><input class="col-xs-4 form-control" @bind="newRegNo" minlength="1" maxlength="6" disabled="@bp.Processing" /></td>
             <td><input class="col-xs-4 form-control" @bind="newMake" maxlength="30" disabled="@bp.Processing" /></td>
             <td><input class="col-xs-4 form-control" @bind="newOdometer" maxlength="10" disabled="@bp.Processing" /></td>
             <td><input class="col-xs-4 form-control" @bind="newCostKm" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
                 <select class="form-select me-4" @bind=newVehicleType disabled="@bp.Processing">
-                    @foreach (var vT in bp.VehicleTypeNames)
-                    {
-                        <option value="@vT">@vT</option>
-                    }
+                @foreach (var vT in bp.VehicleTypeNames)
+                {
+                    <option value="@vT">@vT</option>
+                }
                 </select>
             </td>
             <td><input class="col-xs-4 form-control" @bind="newCostDay" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
                 <button class="btn btn-sm btn-primary" @onclick="AddVehicle" disabled="@bp.Processing">Add Vehicle</button>
-                </td>
+            </td>
             <td class="text-center">
-                @if (bp.Processing)
-                {
-                    <div class="spinner-border text-warning" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                }
+            @if (bp.Processing)
+            {
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            }
             </td>
         </tr>
-        @* Show existing cars *@
+
+        @* Show existing vehicles *@
         @foreach (var vehicle in bp.GetVehicles(vStatus))
         {
         <tr>
-            <td>@vehicle.Id</td>
+            @* <td>@vehicle.Id</td> *@
             <td>@vehicle.RegNo</td>
             <td>@vehicle.Make</td>
             <td>@vehicle.Odometer</td>
@@ -176,21 +180,21 @@
             @* Actions *@
             @if (vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available)
             {
-                    <td>
-                            <button class="btn btn-sm btn-outline-success form-control-sm" @onclick="async () => await bp.RentVehicle(vehicle.Id, rentCustomerId)" disabled="@bp.Processing">Rent</button>
-                    </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-success form-control-sm" @onclick="async () => await bp.RentVehicle(vehicle.Id, rentCustomerId)" disabled="@bp.Processing">Rent</button>
+                </td>
             }
             else
             {
                 <td>
                     <div class="input-group input-group-sm">
-                        <input class="input-group-text" @bind="rentDrivenKm" type="text" min="1" max="10000" placeholder="Driven distance" disabled="@bp.Processing" />
-                        <button class="btn btn-sm btn-outline-success form-control" @onclick="(() => ReturnVehicle(vehicle.Id))" disabled="@bp.Processing">Return</button>
+                        <input class="form-control" @bind="rentDrivenKm" type="text" min="1" max="10000" placeholder="Driven distance" disabled="@bp.Processing" />
+                            <button class="form-control btn btn-sm btn-outline-warning" @onclick="(() => ReturnVehicle(vehicle.Id))" disabled="@bp.Processing">Return</button>
                     </div>
                 </td>
             }
-            <td class="text-center"> <span class="badge 
-                text-bg-@(vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available ? "success" : "danger")">
+            <td class="text-center"> 
+                <span class="badge text-bg-@(vehicle.VehicleStatus is Common.Enums.VehicleStatuses.Available ? "success" : "danger")">
                 @vehicle.VehicleStatus
                 </span>
             </td>
@@ -200,11 +204,11 @@
     </tbody>
 </table>
 
-@* Remove vehicle *@
-<div>
+@* Remove vehicle (For testing)*@
+@* <div>
     <input type="number" @bind="carIndexToRemove" />
     <button @onclick="RemoveCar">Remove</button>
-</div>
+</div> *@
 
 
 <h3>Bookings</h3>
@@ -223,24 +227,24 @@
     </thead>
 
     <tbody class="table-group-divider">
-        @foreach (var b in bp.GetBookings())
-        {
-            if (b.BookingValid is false) continue;
-            <tr>
-                <td>@b.Vehicle.RegNo</td>
-                <td>@b.Customer.CustomerOutput</td>
-                <td>@b.OdometerRented</td>
-                <td>@b.OdometerReturned</td>
-                <td>@b.DateRented.ToString("dd/MM/yyyy")</td>
-                <td>@b.DateReturned?.ToString("dd/MM/yyyy")</td>
-                <td>@(b.Cost > 0 ? Math.Round(b.Cost, 2) : "")</td>
-                <td class="text-center">
-                    <span class="badge
-                text-bg-@(b.BookingClosed ? "primary" : "warning")">
-                        @(b.BookingClosed ? "Closed" : "Open")
-                    </span>
-                </td>
-            </tr>
+    @foreach (var b in bp.GetBookings())
+    {
+        if (b.BookingValid is false) continue;
+        <tr>
+            <td>@b.Vehicle.RegNo</td>
+            <td>@b.Customer.CustomerOutput</td>
+            <td>@b.OdometerRented</td>
+            <td>@b.OdometerReturned</td>
+            <td>@b.DateRented.ToString("dd/MM/yyyy")</td>
+            <td>@b.DateReturned?.ToString("dd/MM/yyyy")</td>
+            <td>@(b.Cost > 0 ? Math.Round(b.Cost, 2) : "")</td>
+            <td class="text-center">
+                <span class="badge
+            text-bg-@(b.BookingClosed ? "primary" : "warning")">
+                    @(b.BookingClosed ? "Closed" : "Open")
+                </span>
+            </td>
+        </tr>
         }
     </tbody>
 </table>
@@ -249,6 +253,7 @@
 {
     VehicleStatuses vStatus = default;
 
+    /* Error handling */
     List<string> addCustomerErrors = new();
     List<string> addVehicleErrors = new();
     string rentReturnError = string.Empty;
@@ -301,7 +306,7 @@
 
         try
         {
-            bp.AddCustomer(int.Parse(newSsn), newFirstName, newLastName);
+            bp.AddCustomer(int.Parse(newSsn), newFirstName.Capitalize(), newLastName.Capitalize());
             newSsn = newFirstName = newLastName = string.Empty;
         }
         catch (Exception ex)
@@ -342,7 +347,7 @@
         try
         {
             unforseenError = string.Empty;
-            bp.AddVehicle(newRegNo, newMake, newOdometer, newVehicleType, newCostKm, newCostDay);
+            bp.AddVehicle(newRegNo, newMake.Capitalize(), newOdometer, newVehicleType, newCostKm, newCostDay);
             newRegNo = newMake = string.Empty;
             newOdometer = newCostDay = null;
             newCostKm = null;
@@ -375,9 +380,10 @@
         }
     }
 
-    int carIndexToRemove;
+    //For testing
+    /*int carIndexToRemove;
     void RemoveCar()
-    {
+        {
         bp.RemoveCar(carIndexToRemove);
-    }
+    }*/
 }

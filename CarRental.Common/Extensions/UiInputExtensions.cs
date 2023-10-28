@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace CarRental.Common.Extensions;
 
@@ -21,5 +17,12 @@ public static class UiInputExtensions
         /*No leading 0s*/ 
         Regex regex = new Regex(@"^[1-9]\d*$");
         return regex.IsMatch(inputString);
+    }
+
+    public static string Capitalize(this string inputString)
+    {
+        char[] separators = { ' ', '-' };
+        string pattern = "(?<=[" + string.Join("", separators) + "]|^)\\w+";
+        return Regex.Replace(inputString, pattern, match => char.ToUpper(match.Value[0]) + match.Value.Substring(1).ToLower());
     }
 }
