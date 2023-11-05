@@ -25,4 +25,5 @@ public static class UiInputExtensions
         string pattern = "(?<=[" + string.Join("", separators) + "]|^)\\w+";
         return Regex.Replace(inputString, pattern, match => char.ToUpper(match.Value[0]) + match.Value.Substring(1).ToLower());
     }
+
 }

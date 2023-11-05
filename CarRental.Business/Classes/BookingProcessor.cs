@@ -43,26 +43,107 @@ public class BookingProcessor
 
     }
 
-    public void AddCustomer(int ssn, string firstName, string lastName)
+    public void AddCustomer(UIinput uiinput)
     {
-        var newCustomer = new Customer(_data.NextPersonId, ssn, lastName, firstName);
-        _data.Add(newCustomer);
+        try
+        {
+            uiinput.inputErrorCustomer = false;
+            uiinput.addCustomerErrors = new();
+
+            if (uiinput.newSsn.Length != uiinput.LengthSsn || !uiinput.newSsn.IsNumber())
+            {
+                uiinput.addCustomerErrors.Add($"Unique SSN with {uiinput.LengthSsn} digits and no leading zeros");
+                uiinput.inputErrorCustomer = true;
+            }
+
+            if (uiinput.newFirstName.Length < uiinput.minLengthName || !uiinput.newFirstName.IsLettersOnly() || uiinput.newLastName.Length < uiinput.minLengthName || !uiinput.newLastName.IsLettersOnly())
+            {
+                uiinput.addCustomerErrors.Add($"First and last name with at least {uiinput.minLengthName} letters");
+                uiinput.inputErrorCustomer = true;
+            }
+            if (uiinput.newSsn.IsNumber() && GetCustomers().Any(c => c.Ssn == (int.Parse(uiinput.newSsn))))
+            {
+                uiinput.addCustomerErrors.Add($"SSN that does not exist in database yet");
+                uiinput.inputErrorCustomer = true;
+            }
+
+            if (uiinput.inputErrorCustomer) throw new ArgumentException("Input error"); // Is displayed in UI
+
+            var newCustomer = new Customer(_data.NextPersonId, int.Parse(uiinput.newSsn), uiinput.newLastName.Capitalize(), uiinput.newFirstName.Capitalize());
+            _data.Add(newCustomer);
+            uiinput.newSsn = uiinput.newFirstName = uiinput.newLastName = string.Empty;
+        }
+        catch (ArgumentException) { }
+        catch (Exception ex)
+        {
+            uiinput.unforseenError = $"Unforseen error: {ex.Message}";
+        }
+
+
     }
 
-    public void AddVehicle(string newRegNo, string newMake, int? newOdometer, VehicleTypes newVehicleType, double? newCostKm, int? newCostDay)
+    public void AddVehicle(UIinput uiinput)
     {
-        if (newOdometer is null || newCostKm is null || newCostDay is null) return;
-        IVehicle newVehicle;
-        if (newVehicleType == VehicleTypes.Motorcycle) 
+        try
         {
-            newVehicle = new Motorcycle(_data.NextVehicleId, newRegNo, newMake, (int)newOdometer, newVehicleType, (double)newCostKm, (int)newCostDay);
-        }
-        else
-        {
-            newVehicle = new Car(_data.NextVehicleId, newRegNo, newMake, (int)newOdometer, newVehicleType, (double)newCostKm, (int)newCostDay);
-        }
+            uiinput.inputErrorVehicle = false;
+            uiinput.addVehicleErrors = new();
 
-        _data.Add(newVehicle);
+            if (uiinput.newRegNo.Length != uiinput.LengthRegNo)
+            {
+                uiinput.addVehicleErrors.Add($"Unique registration number with {uiinput.LengthRegNo} characters");
+                uiinput.inputErrorVehicle = true;
+            }
+
+            if (GetVehicles().Any(v => v.RegNo == uiinput.newRegNo.ToUpper()))
+            {
+                uiinput.addVehicleErrors.Add($"Registration number that does not exist in database yet");
+                uiinput.inputErrorVehicle = true;
+            }
+
+            if (uiinput.newMake.Length < uiinput.minLengthMake || !uiinput.newMake.IsLettersOnly())
+            {
+                uiinput.addVehicleErrors.Add($"Make name with at least {uiinput.minLengthMake} letters. Only letters are allowed");
+                uiinput.inputErrorVehicle = true;
+            }
+            if (uiinput.newOdometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null || uiinput.newOdometer < 0 || uiinput.newCostKm < 0 || uiinput.newCostDay < 0)
+            {
+                uiinput.addVehicleErrors.Add($"Positive Odometer value (int), positive Cost per km (double) and positive Cost per day (int) ");
+                uiinput.inputErrorVehicle = true;
+            }
+            if (uiinput.inputErrorVehicle) throw new ArgumentException("Input error"); // Is displayed in UI
+
+            uiinput.unforseenError = string.Empty;
+
+
+            if (uiinput.newOdometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null) throw new Exception();
+            IVehicle newVehicle;
+
+            uiinput.newRegNo = uiinput.newRegNo.ToUpper();
+            uiinput.newMake = uiinput.newMake.Capitalize();
+
+            if (uiinput.newVehicleType == VehicleTypes.Motorcycle) 
+            {
+                newVehicle = new Motorcycle(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+            }
+            else
+            {
+                newVehicle = new Car(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+            }
+
+            _data.Add(newVehicle);
+
+
+            uiinput.newRegNo = uiinput.newMake = string.Empty;
+            uiinput.newOdometer = uiinput.newCostDay = null;
+            uiinput.newCostKm = null;
+
+        }
+        catch (ArgumentException) { }
+        catch (Exception ex)
+        {
+            uiinput.unforseenError = $"Unforseen error: {ex.Message}";
+        }
     }
 
     public async Task<List<IBooking>> RentVehicle(int vehicleId, int customerId)
@@ -75,10 +156,30 @@ public class BookingProcessor
         return _data.Get<IBooking>(null).ToList();
     }
 
-    public void ReturnVehicle(int vehicleId, int? drivenKm, DateTime? returnDate)
+    public void ReturnVehicle(int vehicleId, UIinput uiinput)
     {
-        if (drivenKm is null || returnDate is null) return;
-        _data.ReturnVehicle(vehicleId, (int)drivenKm, DateOnly.FromDateTime((DateTime)returnDate));
+        try
+        {
+            uiinput.rentReturnError = string.Empty;
+            if (uiinput.rentDrivenKm < 1 || uiinput.rentDrivenKm is null) throw new ArgumentException("Distance reuired to be whole number and bigger than 0");
+            if (uiinput.returnDate is null) throw new ArgumentException("Return date required");
+
+
+            _data.ReturnVehicle(vehicleId, (int)uiinput.rentDrivenKm, DateOnly.FromDateTime((DateTime)uiinput.returnDate));
+
+            uiinput.rentDrivenKm = null;
+
+        }
+        catch (ArgumentException ex)
+        {
+            uiinput.rentReturnError = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            uiinput.unforseenError = $"Unforseen error: {ex.Message}";
+        }
+
+
     }
 
     public string[] VehicleStatusNames => _data.VehicleStatusNames;
@@ -91,4 +192,4 @@ public class BookingProcessor
         _data.RemoveAvehicle(carIndexToRemove);
     }*/
 
-}
+    }
