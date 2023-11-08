@@ -2,49 +2,22 @@
 using CarRental.Common.Enums;
 using CarRental.Common.Extensions;
 using CarRental.Common.Interfaces;
-using CarRental.Data.Classes;
 using CarRental.Data.Interfaces;
-using System.Runtime.Intrinsics.X86;
 
 namespace CarRental.Business.Classes;
 
 public class BookingProcessor
 {
     private readonly IData _data;
-
-
-
     public bool Processing { get; private set; } = false;
-
     public BookingProcessor(IData data) => _data = data;
 
-    public IEnumerable<Customer> GetCustomers()
-    {
-        return _data.Get<IPerson>(null).Cast<Customer>();
-    }
+    public string[] VehicleStatusNames => _data.VehicleStatusNames;
+    public string[] VehicleTypeNames => _data.VehicleTypeNames;
+    public VehicleTypes GetVehicleType(string name) => _data.GetVehicleType(name);
 
-    public Customer? GetCustomer(int customerId)
-    {
-        return GetCustomers().SingleOrDefault(c => c.Id == customerId);
-    }
-
-    public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
-    {
-        if (status != default) return _data.Get<IVehicle>(v => v.VehicleStatus == status);
-        else return _data.Get<IVehicle>(null);
-    }
-
-    public IVehicle? GetVehicle(int vehicleId) 
-    {
-        return _data.Single<IVehicle>(v => v.Id == vehicleId);
-    }
-
-    public IEnumerable<IBooking> GetBookings()
-    {
-        return _data.Get<IBooking>(null);
-
-    }
-
+    public IEnumerable<Customer> GetCustomers() => _data.Get<IPerson>(null).Cast<Customer>();
+    public Customer? GetCustomer(int customerId) => GetCustomers().SingleOrDefault(c => c.Id == customerId);
     public void AddCustomer(UIinput uiinput)
     {
         try
@@ -67,6 +40,7 @@ public class BookingProcessor
                 uiinput.addCustomerErrors.Add($"First and last name with at least {uiinput.minLengthName} letters");
                 uiinput.inputErrorCustomer = true;
             }
+
             if (GetCustomers().Any(c => c.Ssn == uiinput.NewCustomer.Ssn))
             {
                 uiinput.addCustomerErrors.Add($"SSN that does not exist in database yet");
@@ -76,6 +50,7 @@ public class BookingProcessor
             if (uiinput.inputErrorCustomer) throw new ArgumentException("Input error"); // Is displayed in UI
 
             _data.Add(uiinput.NewCustomer);
+
             uiinput.NewCustomer = new Customer();
         }
         catch (ArgumentException) { }
@@ -83,10 +58,14 @@ public class BookingProcessor
         {
             uiinput.unforseenError = $"Unforseen error: {ex.Message}";
         }
-
-
     }
 
+    public IEnumerable<IVehicle> GetVehicles(VehicleStatuses status = default)
+    {
+        if (status != default) return _data.Get<IVehicle>(v => v.VehicleStatus == status);
+        else return _data.Get<IVehicle>(null);
+    }
+    public IVehicle? GetVehicle(int vehicleId) => _data.Single<IVehicle>(v => v.Id == vehicleId);
     public void AddVehicle(UIinput uiinput)
     {
         try
@@ -130,12 +109,12 @@ public class BookingProcessor
 
             if (uiinput.NewVehicle is not null)
             {
-                if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle) 
+                if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle)
                 {
                     Motorcycle newMotorcycle = new Motorcycle(uiinput.NewVehicle);
                     _data.Add(newMotorcycle);
                 }
-                else if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle && uiinput.NewVehicle is not null)
+                else
                 {
                     Car newCar = new Car(uiinput.NewVehicle);
                     _data.Add(newCar);
@@ -145,7 +124,7 @@ public class BookingProcessor
             uiinput.NewVehicle = new Vehicle();
 
         }
-        catch (ArgumentNullException) 
+        catch (ArgumentNullException)
         {
             uiinput.inputErrorVehicle = true;
             uiinput.addVehicleErrors.Add("Provide all input fields");
@@ -157,12 +136,16 @@ public class BookingProcessor
         }
     }
 
+    public IEnumerable<IBooking> GetBookings() => _data.Get<IBooking>(null);
+
     public async Task<List<IBooking>> RentVehicle(int vehicleId, int customerId)
     {
         Processing = true;
         await Task.Delay(2000);
         var newBooking = _data.RentVehicle(vehicleId, customerId);
+
         _data.Add(newBooking);
+
         Processing = false;
         return _data.Get<IBooking>(null).ToList();
     }
@@ -175,11 +158,9 @@ public class BookingProcessor
             if (uiinput.rentDrivenKm < 1 || uiinput.rentDrivenKm is null) throw new ArgumentException("Distance reuired to be whole number and bigger than 0");
             if (uiinput.returnDate is null) throw new ArgumentException("Return date required");
 
-
             _data.ReturnVehicle(vehicleId, (int)uiinput.rentDrivenKm, DateOnly.FromDateTime((DateTime)uiinput.returnDate));
 
             uiinput.rentDrivenKm = null;
-
         }
         catch (ArgumentException ex)
         {
@@ -189,13 +170,7 @@ public class BookingProcessor
         {
             uiinput.unforseenError = $"Unforseen error: {ex.Message}";
         }
-
-
     }
-
-    public string[] VehicleStatusNames => _data.VehicleStatusNames;
-    public string[] VehicleTypeNames => _data.VehicleTypeNames;
-    public VehicleTypes GetVehicleType(string name) => _data.GetVehicleType(name);
 
     //FOR TESTING
     /*public void RemoveCar(int carIndexToRemove)
