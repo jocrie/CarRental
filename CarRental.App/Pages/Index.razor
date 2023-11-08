@@ -35,7 +35,7 @@
 <table class="table w-50 mb-4 align-middle">
     <thead>
         <tr>
-            @* <th scope="col">ID</th> *@
+            <th scope="col">ID</th>
             <th scope="col">SSN</th>
             <th scope="col">Last Name</th>
             <th scope="col">First Name</th>
@@ -45,7 +45,7 @@
 
     <tbody>
         <tr class="table-primary">
-            @* <td></td> *@
+            <td></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.Ssn" placeholder="@uiinput.LengthSsn digit SSN" maxlength="5" /></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.LastName" placeholder="Last Name" maxlength="30" /></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.FirstName" placeholder="First Name" maxlength="30" /></td>
@@ -54,7 +54,7 @@
         @foreach (var person in bp.GetCustomers().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList())
         {
         <tr>
-            @* <td>@person.Id</td> *@
+            <td>@person.Id</td>
             <td>@person.Ssn</td>
             <td>@person.LastName</td>
             <td>@person.FirstName</td>
@@ -125,7 +125,7 @@
 <table id="vehicleTable" class="table mb-4 align-middle">
     <thead>
         <tr>
-            @* <th scope="col">ID</th> *@
+            <th scope="col">ID</th>
             <th scope="col">RegNo</th>
             <th scope="col">Make</th>
             <th scope="col">Odometer [km]</th>
@@ -139,7 +139,7 @@
     <tbody class="table-group-divider">
         @* Add vehicle *@
         <tr class="table-primary">
-            @* <td></td> *@
+            <td></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.RegNo" minlength="1" maxlength="6" disabled="@bp.Processing" /></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.Make" maxlength="30" disabled="@bp.Processing" /></td>
             <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.Odometer" maxlength="10" disabled="@bp.Processing" /></td>
@@ -170,7 +170,7 @@
         @foreach (var vehicle in bp.GetVehicles(uiinput.vStatus))
         {
         <tr>
-            @* <td>@vehicle.Id</td> *@
+            <td>@vehicle.Id</td>
             <td>@vehicle.RegNo</td>
             <td>@vehicle.Make</td>
             <td>@vehicle.Odometer</td>

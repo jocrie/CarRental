@@ -12,6 +12,8 @@ public class BookingProcessor
 {
     private readonly IData _data;
 
+
+
     public bool Processing { get; private set; } = false;
 
     public BookingProcessor(IData data) => _data = data;
@@ -47,13 +49,13 @@ public class BookingProcessor
     {
         try
         {
+            uiinput.NewCustomer.Id = _data.NextPersonId;
             uiinput.inputErrorCustomer = false;
             uiinput.addCustomerErrors = new();
 
             uiinput.NewCustomer.FirstName = uiinput.NewCustomer.FirstName.Capitalize();
             uiinput.NewCustomer.LastName = uiinput.NewCustomer.LastName.Capitalize();
 
-            // !uiinput.NewCustomer.Ssn.IsNumber()
             if (uiinput.NewCustomer.Ssn?.ToString().Length != uiinput.LengthSsn)
             {
                 uiinput.addCustomerErrors.Add($"Unique SSN with {uiinput.LengthSsn} digits and no leading zeros");
@@ -89,11 +91,12 @@ public class BookingProcessor
     {
         try
         {
+            uiinput.NewVehicle.Id = _data.NextVehicleId;
             uiinput.inputErrorVehicle = false;
             uiinput.addVehicleErrors = new();
 
             if (uiinput.NewVehicle.RegNo is null || uiinput.NewVehicle.Make is null || uiinput.NewVehicle.CostDay is null || uiinput.NewVehicle.CostKm is null)
-                throw new ArgumentException("Provide all input fields");
+                throw new ArgumentNullException();
 
             uiinput.NewVehicle.RegNo = uiinput.NewVehicle.RegNo.ToUpper();
             uiinput.NewVehicle.Make = uiinput.NewVehicle.Make.Capitalize();
@@ -125,32 +128,29 @@ public class BookingProcessor
             uiinput.unforseenError = string.Empty;
 
 
-            // if (uiinput.NewVehicle.Odometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null) throw new Exception();
-            // IVehicle newVehicle;
-
-            if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle) 
+            if (uiinput.NewVehicle is not null)
             {
-                //newVehicle = new Motorcycle(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
-                _data.Add((Motorcycle)uiinput.NewVehicle);
-            }
-            else
-            {
-                // newVehicle = new Car(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
-                _data.Add((Car)uiinput.NewVehicle);
+                if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle) 
+                {
+                    Motorcycle newMotorcycle = new Motorcycle(uiinput.NewVehicle);
+                    _data.Add(newMotorcycle);
+                }
+                else if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle && uiinput.NewVehicle is not null)
+                {
+                    Car newCar = new Car(uiinput.NewVehicle);
+                    _data.Add(newCar);
+                }
             }
 
             uiinput.NewVehicle = new Vehicle();
 
-
-            /*uiinput.newRegNo = uiinput.newMake = string.Empty;
-            uiinput.newOdometer = uiinput.newCostDay = null;
-            uiinput.newCostKm = null;*/
-
         }
-        catch (ArgumentException) 
+        catch (ArgumentNullException) 
         {
-
+            uiinput.inputErrorVehicle = true;
+            uiinput.addVehicleErrors.Add("Provide all input fields");
         }
+        catch (ArgumentException) { }
         catch (Exception ex)
         {
             uiinput.unforseenError = $"Unforseen error: {ex.Message}";

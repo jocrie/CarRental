@@ -6,8 +6,8 @@ namespace CarRental.Common.Classes
     public class Vehicle : IVehicle
     {
         public int Id { get; set; }
-        public string RegNo { get; set; }
-        public string Make { get; set; }
+        public string RegNo { get; set; } = string.Empty;
+        public string Make { get; set; } = string.Empty;
         public int? Odometer { get; set; } = null;
         public VehicleTypes VehicleType { get; set; }
         public VehicleStatuses VehicleStatus { get; set; } = VehicleStatuses.Available;
@@ -17,7 +17,6 @@ namespace CarRental.Common.Classes
         => (Id, RegNo, Make, Odometer, VehicleType, CostKm, CostDay) = (id, regNo, make, odometer, vehicleType, costKm, costDay);
         public Vehicle()
         {
-            
         }
     }
 }
