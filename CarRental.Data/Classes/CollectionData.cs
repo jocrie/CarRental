@@ -83,10 +83,10 @@ public class CollectionData : IData
     {
         var vehicle = Single<IVehicle>(v => v.Id == vehicleId);
         var customer = Single<IPerson>(p => p.Id == customerId);
-        if (vehicle == null || customer == null) return null;
+        if (vehicle is null || customer is null || vehicle.Odometer is null) return null;
         vehicle.VehicleStatus = VehicleStatuses.Booked;
         DateOnly dateRented = DateOnly.FromDateTime(DateTime.Now);
-        var newBooking = new Booking(NextBookingId, vehicle, (Customer)customer, dateRented, vehicle.Odometer);
+        var newBooking = new Booking(NextBookingId, vehicle, (Customer)customer, dateRented, (int)vehicle.Odometer);
         
         return newBooking;
     }

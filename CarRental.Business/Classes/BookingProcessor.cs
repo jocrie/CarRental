@@ -50,18 +50,22 @@ public class BookingProcessor
             uiinput.inputErrorCustomer = false;
             uiinput.addCustomerErrors = new();
 
-            if (uiinput.newSsn.Length != uiinput.LengthSsn || !uiinput.newSsn.IsNumber())
+            uiinput.NewCustomer.FirstName = uiinput.NewCustomer.FirstName.Capitalize();
+            uiinput.NewCustomer.LastName = uiinput.NewCustomer.LastName.Capitalize();
+
+            // !uiinput.NewCustomer.Ssn.IsNumber()
+            if (uiinput.NewCustomer.Ssn?.ToString().Length != uiinput.LengthSsn)
             {
                 uiinput.addCustomerErrors.Add($"Unique SSN with {uiinput.LengthSsn} digits and no leading zeros");
                 uiinput.inputErrorCustomer = true;
             }
 
-            if (uiinput.newFirstName.Length < uiinput.minLengthName || !uiinput.newFirstName.IsLettersOnly() || uiinput.newLastName.Length < uiinput.minLengthName || !uiinput.newLastName.IsLettersOnly())
+            if (uiinput.NewCustomer.FirstName.Length < uiinput.minLengthName || !uiinput.NewCustomer.FirstName.IsLettersOnly() || uiinput.NewCustomer.LastName.Length < uiinput.minLengthName || !uiinput.NewCustomer.LastName.IsLettersOnly())
             {
                 uiinput.addCustomerErrors.Add($"First and last name with at least {uiinput.minLengthName} letters");
                 uiinput.inputErrorCustomer = true;
             }
-            if (uiinput.newSsn.IsNumber() && GetCustomers().Any(c => c.Ssn == (int.Parse(uiinput.newSsn))))
+            if (GetCustomers().Any(c => c.Ssn == uiinput.NewCustomer.Ssn))
             {
                 uiinput.addCustomerErrors.Add($"SSN that does not exist in database yet");
                 uiinput.inputErrorCustomer = true;
@@ -69,9 +73,8 @@ public class BookingProcessor
 
             if (uiinput.inputErrorCustomer) throw new ArgumentException("Input error"); // Is displayed in UI
 
-            var newCustomer = new Customer(_data.NextPersonId, int.Parse(uiinput.newSsn), uiinput.newLastName.Capitalize(), uiinput.newFirstName.Capitalize());
-            _data.Add(newCustomer);
-            uiinput.newSsn = uiinput.newFirstName = uiinput.newLastName = string.Empty;
+            _data.Add(uiinput.NewCustomer);
+            uiinput.NewCustomer = new Customer();
         }
         catch (ArgumentException) { }
         catch (Exception ex)
@@ -89,24 +92,30 @@ public class BookingProcessor
             uiinput.inputErrorVehicle = false;
             uiinput.addVehicleErrors = new();
 
-            if (uiinput.newRegNo.Length != uiinput.LengthRegNo)
+            if (uiinput.NewVehicle.RegNo is null || uiinput.NewVehicle.Make is null || uiinput.NewVehicle.CostDay is null || uiinput.NewVehicle.CostKm is null)
+                throw new ArgumentException("Provide all input fields");
+
+            uiinput.NewVehicle.RegNo = uiinput.NewVehicle.RegNo.ToUpper();
+            uiinput.NewVehicle.Make = uiinput.NewVehicle.Make.Capitalize();
+
+            if (uiinput.NewVehicle.RegNo.Length != uiinput.LengthRegNo)
             {
                 uiinput.addVehicleErrors.Add($"Unique registration number with {uiinput.LengthRegNo} characters");
                 uiinput.inputErrorVehicle = true;
             }
 
-            if (GetVehicles().Any(v => v.RegNo == uiinput.newRegNo.ToUpper()))
+            if (GetVehicles().Any(v => v.RegNo == uiinput.NewVehicle.RegNo))
             {
                 uiinput.addVehicleErrors.Add($"Registration number that does not exist in database yet");
                 uiinput.inputErrorVehicle = true;
             }
 
-            if (uiinput.newMake.Length < uiinput.minLengthMake || !uiinput.newMake.IsLettersOnly())
+            if (uiinput.NewVehicle.Make.Length < uiinput.minLengthMake || !uiinput.NewVehicle.Make.IsLettersOnly())
             {
                 uiinput.addVehicleErrors.Add($"Make name with at least {uiinput.minLengthMake} letters. Only letters are allowed");
                 uiinput.inputErrorVehicle = true;
             }
-            if (uiinput.newOdometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null || uiinput.newOdometer < 0 || uiinput.newCostKm < 0 || uiinput.newCostDay < 0)
+            if (uiinput.NewVehicle.CostKm < 0 || uiinput.NewVehicle.CostDay < 0 || uiinput.NewVehicle.Odometer < 0)
             {
                 uiinput.addVehicleErrors.Add($"Positive Odometer value (int), positive Cost per km (double) and positive Cost per day (int) ");
                 uiinput.inputErrorVehicle = true;
@@ -116,30 +125,32 @@ public class BookingProcessor
             uiinput.unforseenError = string.Empty;
 
 
-            if (uiinput.newOdometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null) throw new Exception();
-            IVehicle newVehicle;
+            // if (uiinput.NewVehicle.Odometer is null || uiinput.newCostKm is null || uiinput.newCostDay is null) throw new Exception();
+            // IVehicle newVehicle;
 
-            uiinput.newRegNo = uiinput.newRegNo.ToUpper();
-            uiinput.newMake = uiinput.newMake.Capitalize();
-
-            if (uiinput.newVehicleType == VehicleTypes.Motorcycle) 
+            if (uiinput.NewVehicle.VehicleType == VehicleTypes.Motorcycle) 
             {
-                newVehicle = new Motorcycle(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+                //newVehicle = new Motorcycle(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+                _data.Add((Motorcycle)uiinput.NewVehicle);
             }
             else
             {
-                newVehicle = new Car(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+                // newVehicle = new Car(_data.NextVehicleId, uiinput.newRegNo, uiinput.newMake, (int)uiinput.newOdometer, uiinput.newVehicleType, (double)uiinput.newCostKm, (int)uiinput.newCostDay);
+                _data.Add((Car)uiinput.NewVehicle);
             }
 
-            _data.Add(newVehicle);
+            uiinput.NewVehicle = new Vehicle();
 
 
-            uiinput.newRegNo = uiinput.newMake = string.Empty;
+            /*uiinput.newRegNo = uiinput.newMake = string.Empty;
             uiinput.newOdometer = uiinput.newCostDay = null;
-            uiinput.newCostKm = null;
+            uiinput.newCostKm = null;*/
 
         }
-        catch (ArgumentException) { }
+        catch (ArgumentException) 
+        {
+
+        }
         catch (Exception ex)
         {
             uiinput.unforseenError = $"Unforseen error: {ex.Message}";

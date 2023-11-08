@@ -1,4 +1,5 @@
 ﻿using CarRental.Common.Enums;
+using CarRental.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,15 +21,14 @@ public class UIinput
 
     /* New customer */
     public bool inputErrorCustomer = false;
-    public string newSsn = string.Empty, newFirstName = string.Empty, newLastName = string.Empty;
     public int LengthSsn = 5, minLengthName = 2;
 
     /* New vehicle */
     public bool inputErrorVehicle = false;
-    public string newRegNo = string.Empty, newMake = string.Empty;
-    public VehicleTypes newVehicleType;
+    // public string newRegNo = string.Empty, newMake = string.Empty;
+    /*public VehicleTypes newVehicleType;
     public double? newCostKm = null;
-    public int? newCostDay = null, newOdometer = null;
+    public int? newCostDay = null, newOdometer = null;*/
     public int LengthRegNo = 6, minLengthMake = 2;
 
     /* Rent and return */
@@ -36,4 +36,10 @@ public class UIinput
     public int? rentDrivenKm = null;
     public int minDrivenKm = 1, maxDrivenKm = 10000;
     public DateTime? returnDate = DateTime.Now; //Set to todays date when page is loaded
+
+    public IPerson NewCustomer { get; set; } = new Customer();
+    public IVehicle NewVehicle { get; set; } = new Vehicle();
+
+    // public IBooking NewBooking { get; set; }
+
 }

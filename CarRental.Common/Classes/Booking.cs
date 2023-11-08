@@ -32,7 +32,8 @@ public class Booking : IBooking
         DrivenKm = drivenKm;
         int daysDifference = DateRented.Duration(returnDate);
         OdometerReturned = OdometerRented + DrivenKm;
-        Cost = Vehicle.CostKm * (double)DrivenKm + Vehicle.CostDay * daysDifference;
+        if (Vehicle.CostKm is null || Vehicle.CostDay is null) return;
+        Cost = (double)Vehicle.CostKm * (double)DrivenKm + (double)Vehicle.CostDay * daysDifference;
         BookingClosed = true;
         DateReturned = returnDate;
         if (!OdometerReturned.HasValue) return;

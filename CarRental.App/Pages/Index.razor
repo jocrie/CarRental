@@ -46,9 +46,9 @@
     <tbody>
         <tr class="table-primary">
             @* <td></td> *@
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newSsn" placeholder="@uiinput.LengthSsn digit SSN" maxlength="5" /></td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newLastName" placeholder="Last Name" maxlength="30" /></td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newFirstName" placeholder="First Name" maxlength="30" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.Ssn" placeholder="@uiinput.LengthSsn digit SSN" maxlength="5" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.LastName" placeholder="Last Name" maxlength="30" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewCustomer.FirstName" placeholder="First Name" maxlength="30" /></td>
             <td><button class="btn btn-sm btn-primary" @onclick="(() => bp.AddCustomer(uiinput))">Add Customer</button></td>
         </tr>
         @foreach (var person in bp.GetCustomers().OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList())
@@ -140,19 +140,19 @@
         @* Add vehicle *@
         <tr class="table-primary">
             @* <td></td> *@
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newRegNo" minlength="1" maxlength="6" disabled="@bp.Processing" /></td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newMake" maxlength="30" disabled="@bp.Processing" /></td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newOdometer" maxlength="10" disabled="@bp.Processing" /></td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newCostKm" maxlength="5" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.RegNo" minlength="1" maxlength="6" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.Make" maxlength="30" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.Odometer" maxlength="10" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.CostKm" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
-                <select class="form-select me-4" @bind=uiinput.newVehicleType disabled="@bp.Processing">
+                <select class="form-select me-4" @bind=uiinput.NewVehicle.VehicleType disabled="@bp.Processing">
                 @foreach (var vT in bp.VehicleTypeNames)
                 {
                     <option value="@vT">@vT</option>
                 }
                 </select>
             </td>
-            <td><input class="col-xs-4 form-control" @bind="uiinput.newCostDay" maxlength="5" disabled="@bp.Processing" /></td>
+            <td><input class="col-xs-4 form-control" @bind="uiinput.NewVehicle.CostDay" maxlength="5" disabled="@bp.Processing" /></td>
             <td>
                 <button class="btn btn-sm btn-primary" @onclick="(() => bp.AddVehicle(uiinput))" disabled="@bp.Processing">Add Vehicle</button>
             </td>
