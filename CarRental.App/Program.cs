@@ -1,5 +1,6 @@
 using CarRental.App;
 using CarRental.Business.Classes;
+using CarRental.Common.Classes;
 using CarRental.Data.Classes;
 using CarRental.Data.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
@@ -12,6 +13,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 builder.Services.AddSingleton<BookingProcessor>();
+builder.Services.AddSingleton<UIinput>();
 builder.Services.AddSingleton<IData, CollectionData>();
 
 await builder.Build().RunAsync();

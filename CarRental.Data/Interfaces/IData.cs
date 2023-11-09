@@ -7,7 +7,7 @@ public interface IData
 {
     List<T> Get<T>(Func<T, bool>? expression) where T : class;
     T? Single<T>(Func<T, bool> expression) where T : class;
-    public void Add<T>(T item);
+    public void Add<T>(T item) where T : class;
     public int NextVehicleId { get; }
     public int NextPersonId { get; }
     public int NextBookingId { get; }

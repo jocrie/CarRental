@@ -29,4 +29,6 @@ public class UIinput
 
     public IPerson NewCustomer { get; set; } = new Customer();
     public IVehicle NewVehicle { get; set; } = new Vehicle();
+
+
 }
